@@ -2,6 +2,7 @@ import {ChangeEvent, useState} from "react";
 import {toast, ToastContainer} from "react-toastify";
 
 function Register() {
+
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
@@ -52,6 +53,18 @@ function Register() {
         setJobTitle(e.target.value);
     }
 
+    //email
+    const [errorEmail, setErrorEmail] = useState<string>('');
+    const [isErrorEmail, setIsErrorEmail] = useState<boolean>(false);
+
+    //confirm password
+    const [errorConfirmPassword, setErrorConfirmPassword] = useState<string>('');
+    const [isErrorConfirmPassword, setIsErrorConfirmPassword] = useState<boolean>(false);
+
+    //phone
+    const [errorPhone, setErrorPhone] = useState<string>('');
+    const [isErrorPhone, setIsErrorPhone] = useState<boolean>(false);
+
     const showSuccessMessage = () => {
         toast.success("Đăng ký thành công.",
             {
@@ -71,7 +84,7 @@ function Register() {
 
     //function check email
     const checkExistEmail = async (email: string) => {
-        const url: string = `http://localhost:9000/users/search/existsByEmail?email=${email.trim()}`;
+        const url: string = `http://localhost:8080/account/checkExistEmail?email=${email.trim()}`;
         try {
             const response = await fetch(url);
             const data = await response.text();
@@ -88,21 +101,38 @@ function Register() {
         }
     }
 
+    //function check phone
+    const checkExistPhone = async (phone: string) => {
+        const url: string = `http://localhost:8080/account/checkExistPhone?phone=${phone.trim()}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.text();
+            if (data === 'true') {
+                setErrorPhone('Số điện thoại đã tồn tại');
+                return true;
+            } else {
+                return false;
+            }
+        } catch (e) {
+            console.error("Số điện thoại đã tồn tại:", e);
+            return false;
+
+        }
+    }
+
+    // function check confirm password
+    const checkInvalidConfirmPassword = (password: string, confirmPassword: string) => {
+        if (password.trim() !== confirmPassword.trim()) {
+            setErrorConfirmPassword('Mật khẩu chưa trùng khớp.');
+            return true;
+        } else {
+            return false;
+        }
+    }
 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        //check username
-        const isExistUsername = await checkExistUsername(username);
-        const isInValidUsername = checkValidUsername(username);
-        if (isExistUsername || isInValidUsername) {
-            setIsErrorUsername(true);
-        } else {
-            setIsErrorUsername(false);
-        }
-        //check password
-        setIsErrorPassword(checkInvalidPassword(password));
 
         //check confirm password
         setIsErrorConfirmPassword(checkInvalidConfirmPassword(password, confirmPassword));
@@ -111,17 +141,16 @@ function Register() {
         setIsErrorEmail(await checkExistEmail(email));
 
         //check phone
-        const isExistPhone = await checkExistPhone(phoneNumber);
-        const isValidPhone = checkValidPhone(phoneNumber);
+        const isExistPhone = await checkExistPhone(phone);
 
-        if (isExistPhone || isValidPhone) {
+        if (isExistPhone) {
             setIsErrorPhone(true)
         } else {
             setIsErrorPhone(false);
         }
 
 
-        if (!isErrorUsername && !isErrorPassword && !isErrorConfirmPassword && !isErrorEmail && !isErrorPhone) {
+        if (!isErrorConfirmPassword && !isErrorEmail && !isErrorPhone) {
             try {
                 const url: string = `http://localhost:9000/user-api/register`;
                 const response = await fetch(url, {
@@ -132,13 +161,16 @@ function Register() {
                         body: JSON.stringify({
                             firstName: firstName.trim(),
                             lastName: lastName.trim(),
-                            username: username.trim(),
                             password: password.trim(),
                             confirmPassword: confirmPassword.trim(),
                             email: email.trim(),
-                            phoneNumber: phoneNumber.trim(),
+                            phone: phone.trim(),
                             gender: gender,
-                            address: address.trim()
+                            address: address.trim(),
+                            birthDate : birthDate,
+                            jobTitle : jobTitle.trim(),
+                            country : country.trim(),
+                            city : city.trim()
                         })
                     }
                 );
@@ -148,15 +180,12 @@ function Register() {
 
                     setFirstName('');
                     setLastName('');
-                    setUsername('');
                     setPassword('');
                     setConfirmPassword('');
                     setEmail('');
-                    setPhoneNumber('');
                     setAddress('');
                     setGender('Nam');
 
-                    navigate('/login')
                 } else {
                     console.log(response.json());
                     // alert("Đã xảy ra lỗi trong quá trình đăng ký tài khoản.")
@@ -166,18 +195,18 @@ function Register() {
                 // alert("Đã xảy ra lỗi trong quá trình đăng ký tài khoản.")
                 ErrorMessage();
             }
-        } else  {
+        } else {
             ErrorMessage();
         }
 
     }
     return (
         <div className={'container'}>
-            <div className="header-register d-flex justify-content-between align-items-center">
-                <Link to={'/'} className={'text-black fs-3'} title={'Quay lại trang chủ'}><ArrowLeft></ArrowLeft></Link>
-                <h3 className={'text-center py-3'}>Đăng ký thành viên</h3>
-                <a href="#"></a>
-            </div>
+            {/*<div className="header-register d-flex justify-content-between align-items-center">*/}
+            {/*    <Link to={'/'} className={'text-black fs-3'} title={'Quay lại trang chủ'}><ArrowLeft></ArrowLeft></Link>*/}
+            {/*    <h3 className={'text-center py-3'}>Đăng ký thành viên</h3>*/}
+            {/*    <a href="#"></a>*/}
+            {/*</div>*/}
             <form onSubmit={handleSubmit}>
                 <div className="row">
                     <div className="col-md-6">
@@ -195,17 +224,15 @@ function Register() {
                         </div>
                         <div className="form-register-item">
                             <label htmlFor="username" className="form-label">Tên tài khoản</label>
-                            <input onChange={handleUserNameChange} type="text"
-                                   className={"form-control" + (!isErrorUsername ? " is-valid" : " is-invalid")}
-                                   id="username" value={username}/>
-                            <div className="invalid-feedback">{errorUsername}</div>
+                            <input type="text"
+                                   className={"form-control is-valid"}
+                                   id="username"/>
                         </div>
                         <div className="form-register-item">
                             <label htmlFor="password" className="form-label">Mật khẩu</label>
                             <input onChange={handlePasswordChange} type="password"
-                                   className={"form-control" + (!isErrorPassword ? " is-valid" : " is-invalid")}
+                                   className={"form-control is-valid"}
                                    id="password" value={password}/>
-                            <div className="invalid-feedback">{errorPassword}</div>
                         </div>
                         <div className="form-register-item">
                             <label htmlFor="confirmPassword" className="form-label">Xác nhận mật khẩu</label>
@@ -228,9 +255,9 @@ function Register() {
 
                         <div className="form-register-item">
                             <label htmlFor="phoneNumber" className="form-label">Số điện thoại</label>
-                            <input onChange={handlePhoneNumberChange} type="text"
+                            <input onChange={handlePhoneChange} type="text"
                                    className={"form-control" + (!isErrorPhone ? " is-valid" : " is-invalid")} required
-                                   id="phoneNumber" value={phoneNumber}/>
+                                   id="phoneNumber" value={phone}/>
                             <div className="invalid-feedback">{errorPhone}</div>
                         </div>
                         <div className="form-register-item">
@@ -266,4 +293,5 @@ function Register() {
     )
 
 }
+
 export default Register
