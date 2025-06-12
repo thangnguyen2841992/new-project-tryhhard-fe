@@ -1,4 +1,4 @@
-import {ChangeEvent, useState} from "react";
+import React, {ChangeEvent, useState} from "react";
 import {toast, ToastContainer} from "react-toastify";
 
 function Register() {
@@ -8,12 +8,11 @@ function Register() {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
-    const [city, setCity] = useState('');
+    const [city, setCity] = useState('Hà Nội');
     const [gender, setGender] = useState('');
-    const [country, setCountry] = useState('');
+    const [country, setCountry] = useState('Việt Nam');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [birthDate, setBirthDate] = useState('');
     const [jobTitle, setJobTitle] = useState('');
 
     const handleFirstNameChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -40,17 +39,15 @@ function Register() {
     const handleGenderChange = (e: ChangeEvent<HTMLInputElement>) => {
         setGender(e.target.value);
     }
+    const handleJobTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setJobTitle(e.target.value);
+    }
     const handleCityChange = (e: ChangeEvent<HTMLInputElement>) => {
         setCity(e.target.value);
     }
     const handleBirthDateChange = (e: ChangeEvent<HTMLInputElement>) => {
+        // @ts-ignore
         setBirthDate(e.target.value);
-    }
-    const handleCountryChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setCountry(e.target.value);
-    }
-    const handleJobTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setJobTitle(e.target.value);
     }
 
     //email
@@ -64,6 +61,10 @@ function Register() {
     //phone
     const [errorPhone, setErrorPhone] = useState<string>('');
     const [isErrorPhone, setIsErrorPhone] = useState<boolean>(false);
+
+
+    const [birthDate, setBirthDate] = useState(new Date());
+
 
     const showSuccessMessage = () => {
         toast.success("Đăng ký thành công.",
@@ -90,6 +91,7 @@ function Register() {
             const data = await response.text();
             if (data === 'true') {
                 setErrorEmail('Email đã tồn tại');
+                setIsErrorEmail(true);
                 return true;
             } else {
                 return false;
@@ -109,6 +111,7 @@ function Register() {
             const data = await response.text();
             if (data === 'true') {
                 setErrorPhone('Số điện thoại đã tồn tại');
+                setIsErrorPhone(true);
                 return true;
             } else {
                 return false;
@@ -116,7 +119,6 @@ function Register() {
         } catch (e) {
             console.error("Số điện thoại đã tồn tại:", e);
             return false;
-
         }
     }
 
@@ -138,21 +140,16 @@ function Register() {
         setIsErrorConfirmPassword(checkInvalidConfirmPassword(password, confirmPassword));
 
         //check email
-        setIsErrorEmail(await checkExistEmail(email));
+        await checkExistEmail(email);
 
-        //check phone
-        const isExistPhone = await checkExistPhone(phone);
-
-        if (isExistPhone) {
-            setIsErrorPhone(true)
-        } else {
-            setIsErrorPhone(false);
-        }
+        await checkExistPhone(phone);
 
 
-        if (!isErrorConfirmPassword && !isErrorEmail && !isErrorPhone) {
+
+
+        if (isErrorConfirmPassword || isErrorEmail || isErrorPhone) {
             try {
-                const url: string = `http://localhost:9000/user-api/register`;
+                const url: string = `http://localhost:8080/account/createNewAccount`;
                 const response = await fetch(url, {
                         method: 'POST',
                         headers: {
@@ -167,17 +164,21 @@ function Register() {
                             phone: phone.trim(),
                             gender: gender,
                             address: address.trim(),
-                            birthDate : birthDate,
-                            jobTitle : jobTitle.trim(),
-                            country : country.trim(),
-                            city : city.trim()
+                            birthDate: birthDate,
+                            jobTitle: jobTitle.trim(),
+                            country: 'Việt Nam',
+                            city: city.trim(),
+                            roles : [
+                                'ROLE_USER'
+                            ]
                         })
                     }
                 );
 
                 if (response.ok) {
-                    showSuccessMessage();
+                    // showSuccessMessage();
 
+                    alert("Tạo tài khoản thành công!")
                     setFirstName('');
                     setLastName('');
                     setPassword('');
@@ -185,61 +186,73 @@ function Register() {
                     setEmail('');
                     setAddress('');
                     setGender('Nam');
+                    setPhone('');
+                    setCity('Hà Nội');
+                    setJobTitle('');
+                    setBirthDate(new Date());
+                    setCountry('Việt Nam');
 
                 } else {
                     console.log(response.json());
-                    // alert("Đã xảy ra lỗi trong quá trình đăng ký tài khoản.")
-                    ErrorMessage();
+                    alert("Đã xảy ra lỗi trong quá trình đăng ký tài khoản.")
+                    // ErrorMessage();
                 }
             } catch (error) {
-                // alert("Đã xảy ra lỗi trong quá trình đăng ký tài khoản.")
-                ErrorMessage();
+                alert("Đã xảy ra lỗi trong quá trình đăng ký tài khoản.")
+                // ErrorMessage();
             }
         } else {
-            ErrorMessage();
+            alert("Đã xảy ra lỗi trong quá trình đăng ký tài khoản.")
+            // ErrorMessage();
         }
 
     }
     return (
         <div className={'container'}>
-            {/*<div className="header-register d-flex justify-content-between align-items-center">*/}
-            {/*    <Link to={'/'} className={'text-black fs-3'} title={'Quay lại trang chủ'}><ArrowLeft></ArrowLeft></Link>*/}
-            {/*    <h3 className={'text-center py-3'}>Đăng ký thành viên</h3>*/}
-            {/*    <a href="#"></a>*/}
-            {/*</div>*/}
+            <div className="header-register d-flex justify-content-between align-items-center">
+                {/*<Link to={'/'} className={'text-black fs-3'} title={'Quay lại trang chủ'}><ArrowLeft></ArrowLeft></Link>*/}
+                <h3 className={'text-center py-3'}>Đăng ký thành viên</h3>
+                <a href="#"></a>
+            </div>
             <form onSubmit={handleSubmit}>
                 <div className="row">
                     <div className="col-md-6">
                         <div className="form-register-item">
                             <label htmlFor="firstName" className="form-label">Họ và tên đệm</label>
-                            <input onChange={handleFirstNameChange} type="text" className="form-control is-valid"
+                            <input onChange={handleFirstNameChange} type="text" className="form-control"
                                    required
                                    id="firstName" value={firstName}/>
                         </div>
                         <div className="form-register-item">
                             <label htmlFor="lastName" className="form-label">Tên của bạn</label>
-                            <input onChange={handleLastNameChange} type="text" className="form-control is-valid"
+                            <input onChange={handleLastNameChange} type="text" className="form-control"
                                    required
                                    id="lastName" value={lastName}/>
                         </div>
                         <div className="form-register-item">
-                            <label htmlFor="username" className="form-label">Tên tài khoản</label>
-                            <input type="text"
-                                   className={"form-control is-valid"}
-                                   id="username"/>
-                        </div>
-                        <div className="form-register-item">
                             <label htmlFor="password" className="form-label">Mật khẩu</label>
                             <input onChange={handlePasswordChange} type="password"
-                                   className={"form-control is-valid"}
+                                   className={"form-control"}
                                    id="password" value={password}/>
                         </div>
                         <div className="form-register-item">
                             <label htmlFor="confirmPassword" className="form-label">Xác nhận mật khẩu</label>
                             <input onChange={handleConfirmPasswordChange} type="password"
-                                   className={"form-control" + (!isErrorConfirmPassword ? " is-valid" : " is-invalid")}
+                                // className={"form-control" + (!isErrorConfirmPassword ? " is-valid")}
+                                   className={"form-control"}
                                    id="confirmPassword" value={confirmPassword}/>
                             <div className="invalid-feedback">{errorConfirmPassword}</div>
+                        </div>
+                        <div className="form-register-item">
+                            <label htmlFor="jobTitle" className="form-label">Công việc</label>
+                            <input onChange={handleJobTitleChange} type="text" className="form-control" required
+                                   id="jobTitle" value={jobTitle}/>
+                        </div>
+                        <div className="form-register-item">
+                            <label htmlFor="country" className="form-label">Quốc gia</label>
+                            <input type="text"
+                                   className={"form-control"}
+                                   id="country" value={country} disabled/>
                         </div>
 
                     </div>
@@ -248,7 +261,8 @@ function Register() {
                         <div className="form-register-item">
                             <label htmlFor="email" className="form-label">Email</label>
                             <input onChange={handleEmailChange} type="email"
-                                   className={"form-control" + (!isErrorEmail ? " is-valid" : " is-invalid")} required
+                                className={"form-control" + (!isErrorEmail ? " is-valid" : " is-invalid")} required
+                                //    className={"form-control"} required
                                    id="email" value={email}/>
                             <div className="invalid-feedback">{errorEmail}</div>
                         </div>
@@ -256,13 +270,14 @@ function Register() {
                         <div className="form-register-item">
                             <label htmlFor="phoneNumber" className="form-label">Số điện thoại</label>
                             <input onChange={handlePhoneChange} type="text"
-                                   className={"form-control" + (!isErrorPhone ? " is-valid" : " is-invalid")} required
+                                // className={"form-control" + (!isErrorPhone ? " is-valid" : " is-invalid")} required
+                                   className={"form-control"} required
                                    id="phoneNumber" value={phone}/>
                             <div className="invalid-feedback">{errorPhone}</div>
                         </div>
                         <div className="form-register-item">
                             <label htmlFor="address" className="form-label">Địa chỉ</label>
-                            <input onChange={handleAddressChange} type="text" className="form-control is-valid" required
+                            <input onChange={handleAddressChange} type="text" className="form-control" required
                                    id="address" value={address}/>
                         </div>
                         <div className="form-register-item">
@@ -280,15 +295,26 @@ function Register() {
                                     <label className="form-check-label" htmlFor="female">Nữ</label>
                                 </div>
                             </div>
-
+                            <div className="form-register-item">
+                                <label htmlFor="birthDate" className="form-label" style={{marginTop: '5px'}}>Ngày tháng
+                                    năm sinh</label>
+                                <input id="birthDate" onChange={handleBirthDateChange} className="form-control"
+                                       type="date"/>
+                            </div>
+                            <div className="form-register-item">
+                                <label htmlFor="city" className="form-label">Thành phố</label>
+                                <input onChange={handleCityChange} type="text" className="form-control" required
+                                       id="address" value={city}/>
+                            </div>
                         </div>
 
-                        <button type={'submit'} className={'btn btn-success my-3'} style={{float: 'right'}}>Đăng ký
+                        <button type={'submit'} className={'btn btn-success my-3'} style={{float: 'right'}}>Đăng
+                            Ký
                         </button>
                     </div>
                 </div>
             </form>
-            <ToastContainer/>
+            {/*<ToastContainer/>*/}
         </div>
     )
 
