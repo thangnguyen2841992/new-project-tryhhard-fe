@@ -94,6 +94,7 @@ function Register() {
                 setIsErrorEmail(true);
                 return true;
             } else {
+                setIsErrorEmail(false);
                 return false;
             }
         } catch (e) {
@@ -114,6 +115,7 @@ function Register() {
                 setIsErrorPhone(true);
                 return true;
             } else {
+                setIsErrorPhone(false);
                 return false;
             }
         } catch (e) {
@@ -126,8 +128,10 @@ function Register() {
     const checkInvalidConfirmPassword = (password: string, confirmPassword: string) => {
         if (password.trim() !== confirmPassword.trim()) {
             setErrorConfirmPassword('Mật khẩu chưa trùng khớp.');
+            setIsErrorConfirmPassword(true);
             return true;
         } else {
+            setIsErrorConfirmPassword(false);
             return false;
         }
     }
@@ -147,7 +151,7 @@ function Register() {
 
 
 
-        if (isErrorConfirmPassword || isErrorEmail || isErrorPhone) {
+        if (!isErrorConfirmPassword && !isErrorEmail && !isErrorPhone) {
             try {
                 const url: string = `http://localhost:8080/account/createNewAccount`;
                 const response = await fetch(url, {
@@ -238,8 +242,8 @@ function Register() {
                         <div className="form-register-item">
                             <label htmlFor="confirmPassword" className="form-label">Xác nhận mật khẩu</label>
                             <input onChange={handleConfirmPasswordChange} type="password"
-                                // className={"form-control" + (!isErrorConfirmPassword ? " is-valid")}
-                                   className={"form-control"}
+                                className={"form-control" + (!isErrorConfirmPassword ? " is-valid" : " is-invalid")}
+                                //    className={"form-control"}
                                    id="confirmPassword" value={confirmPassword}/>
                             <div className="invalid-feedback">{errorConfirmPassword}</div>
                         </div>
@@ -270,8 +274,8 @@ function Register() {
                         <div className="form-register-item">
                             <label htmlFor="phoneNumber" className="form-label">Số điện thoại</label>
                             <input onChange={handlePhoneChange} type="text"
-                                // className={"form-control" + (!isErrorPhone ? " is-valid" : " is-invalid")} required
-                                   className={"form-control"} required
+                                className={"form-control" + (!isErrorPhone ? " is-valid" : " is-invalid")} required
+                                   // className={"form-control"} required
                                    id="phoneNumber" value={phone}/>
                             <div className="invalid-feedback">{errorPhone}</div>
                         </div>

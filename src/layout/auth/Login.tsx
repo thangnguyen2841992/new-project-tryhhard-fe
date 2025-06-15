@@ -1,6 +1,5 @@
 import React, {ChangeEvent, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
-import {ArrowLeft} from "react-bootstrap-icons";
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -138,7 +137,7 @@ function Login() {
 
     return (
         <div className={'container'}>
-            <Link to={'/'} className={'text-black fs-3'} title={'Quay lại trang chủ'}><ArrowLeft></ArrowLeft></Link>
+            {/*<Link to={'/'} className={'text-black fs-3'} title={'Quay lại trang chủ'}><ArrowLeft></ArrowLeft></Link>*/}
 
 
             <div className="row">
