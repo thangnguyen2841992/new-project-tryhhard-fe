@@ -702,6 +702,7 @@ input[type="text"]:focus {
   transition: border-color 0.3s; /* Hiệu ứng chuyển đổi */
   padding: 10px 40px 10px 20px; /* Padding bên phải lớn hơn để tạo khoảng cách cho mũi tên */
   appearance: none;
+  color : #333
 }
 
 #modal-create-post-topic-select:hover {
