@@ -17,6 +17,24 @@ function ModalCreatePost(props : any) {
 
     const [isShowModalEditImages, setIsShowModalEditImages] = useState(false);
 
+    const topics = [
+        {value : '1', label : 'yeah1'},
+        {value : '2', label : 'yeah2'},
+        {value : '3', label : 'yeah3'},
+        {value : '4', label : 'yeah4'},
+    ]
+    const defaultSelect = {
+        value : '0', label : 'Chủ đề'
+    }
+
+
+    const [selectedTopicValue, setSelectedTopicValue] = useState<string>(defaultSelect?.value || '');
+
+    const handleChangeTopic = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = event.target.value;
+        setSelectedTopicValue(value);
+    };
+
 
 
     const handleOpenImageClick = (e: React.FormEvent) => {
@@ -221,16 +239,46 @@ function ModalCreatePost(props : any) {
                         </div>
                         <div style={isShowImageForm ? {height : '350px', overflowY : 'scroll'} : {}}>
                             <div className="create-post-modal-content">
-                            <textarea
-                                className={'create-post-modal-content-textarea'}
-                                onChange={handleChangeContent}
-                                ref={textareaRef}
-                                placeholder={'Bạn đang nghĩ gì?'}
-                            >
+                                <div id={'select-option-area'}>
+                                <select id={'modal-create-post-topic-select'} value={selectedTopicValue} onChange={handleChangeTopic}>
+                                    {topics.map((option) => (
+                                        <option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                                <span className="select-arrow">▼</span> {/* Mũi tên */}
+                                </div>
+                                <input id={'inputTitlePost'} type="text"
+                                       placeholder={'Hãy nhập tiêu đề câu hỏi của bạn.'}
+                                       style={{
+                                           height: '40px',
+                                           width: '100%',
+                                           borderRadius: '20px',
+                                           border: '1px solid #dee2e6',
+                                           outline: 'none',
+                                           padding: '0 20px',
+                                           fontSize: '15px',
+                                           // background: '#f2f2f2',
+                                           marginTop: '10px'
+                                       }}/>
+                                <textarea
+                                    className={'create-post-modal-content-textarea'}
+                                    onChange={handleChangeContent}
+                                    ref={textareaRef}
+                                    placeholder={'Bạn đang thắc mắc điều gì?'}
+                                    style={{
+                                        padding: '10px 20px',
+                                        border: '1px solid #dee2e6',
+                                        borderRadius: '20px',
+                                        fontSize: '15px'
+                                    }}
+                                >
                                 {contentText}
                             </textarea>
                             </div>
-                            <div hidden={!isShowImageForm || imageListData.length > 0} className="create-post-modal-add-image" style={{
+                            <div hidden={!isShowImageForm || imageListData.length > 0}
+                                 className="create-post-modal-add-image" style={{
                                 cursor: 'pointer',
                                 background: '#e5e5e5',
                                 height: '200px',
@@ -421,7 +469,7 @@ function ModalCreatePost(props : any) {
                         padding: '5px 10px',
                         border: '1px solid #e5e5e5',
                         display: 'flex',
-                        justifyContent: 'space-between',
+                        // justifyContent: 'space-between',
                         alignItems: 'center',
                         borderRadius: '10px'
                     }}>
@@ -433,10 +481,6 @@ function ModalCreatePost(props : any) {
                                     className='bx bx-images'></i></span>
                             <span style={{color: '#1877F2'}} title={'Gắn thẻ người khác'}><i
                                 className='bx bxs-user-plus'></i></span>
-                            <span style={{color: '#F7B928'}} title={'Cảm xúc/hoạt động'}><i
-                                className='bx bx-smile'></i></span>
-                            <span style={{color: '#F5533D'}} title={'Check in'}><i
-                                className='bx bxs-location-plus'></i></span>
                         </div>
 
 

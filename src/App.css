@@ -15,8 +15,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border: none;
   outline: none;
   font-size: 27px;
@@ -43,16 +43,16 @@
 }
 
 .nav-avatar-wrapper {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
 }
 
 .nav-avatar-wrapper img{
   object-fit: cover;
 }
 .nav-avatar-wrapper-img{
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
 }
@@ -249,15 +249,17 @@
 /* container-wrapper */
 
 
-.form-create-post-wrapper, .list-post-wrapper {
+ .list-post-wrapper {
   padding: 20px;
   background: #f2f2f2;
   border-radius: 10px;
   margin-bottom: 20px;
 }
 
+
 .create-post-top {
   display: flex;
+  position: relative;
 }
 
 .create-post-avatar {
@@ -281,9 +283,9 @@
   height: 50px;
   width: 100%;
   border-radius: 20px;
-  border: 1px solid #e5e5e5;
+  border: none;
   outline: none;
-  background: #fff;
+  background: #F5F5F5;
   padding: 20px;
   font-size: 18px;
   cursor: pointer;
@@ -571,25 +573,25 @@
   transition: 0.5s;
 }
 
-.home-content-left-item:hover, .home-content-left-user:hover{
-  background: #e5e5e5;
+.home-content-left-item:hover{
+  background: #696969;
 }
-.home-content-right-title-btn button {
-  border-radius: 50%;
-  transition: 0.5s;
-}
-.home-content-right-title-btn button:hover{
-  background: #e5e5e5;
-}
-.home-content-right-item{
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 10px;
-  transition: 0.5s;
-}
-.home-content-right-item:hover{
-  background: #e5e5e5;
-}
+/*.home-content-right-title-btn button {*/
+/*  border-radius: 50%;*/
+/*  transition: 0.5s;*/
+/*}*/
+/*.home-content-right-title-btn button:hover{*/
+/*  background: #e5e5e5;*/
+/*}*/
+/*.home-content-right-item{*/
+/*  cursor: pointer;*/
+/*  padding: 5px;*/
+/*  border-radius: 10px;*/
+/*  transition: 0.5s;*/
+/*}*/
+/*.home-content-right-item:hover{*/
+/*  background: #e5e5e5;*/
+/*}*/
 .friend-list-li{
   padding: 5px 10px;
   cursor: pointer;
@@ -669,3 +671,56 @@ input[type="text"]:focus {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+.home-content-left-item-icon {
+  margin-right: 10px;
+}
+#registerBtn {
+  width: 200px;
+  height: 50px;
+  background: #42B72A;
+  color: #FFFFFF;
+  font-weight: bold;
+  font-size: 17px;
+}
+#registerBtn:hover {
+  background: #36a420;
+}
+#select-option-area {
+  width: 100%;
+  position: relative; /* Để tạo vị trí cho mũi tên */
+  display: inline-block; /* Để không chiếm toàn bộ chiều rộng */
+  margin-top: 15px;
+}
+#modal-create-post-topic-select {
+  width: 100%; /* Chiều rộng của select */
+  padding: 10px; /* Khoảng cách bên trong */
+  font-size: 16px; /* Kích thước chữ */
+  border: 1px solid #dee2e6; /* Đường viền */
+  border-radius: 20px; /* Bo tròn các góc */
+  /*background-color: #f9f9f9; !* Màu nền *!*/
+  cursor: pointer; /* Đổi con trỏ chuột */
+  transition: border-color 0.3s; /* Hiệu ứng chuyển đổi */
+  padding: 10px 40px 10px 20px; /* Padding bên phải lớn hơn để tạo khoảng cách cho mũi tên */
+  appearance: none;
+}
+
+#modal-create-post-topic-select:hover {
+  border-color: #888; /* Đổi màu viền khi hover */
+}
+
+#modal-create-post-topic-select:focus {
+  outline: none; /* Không có đường viền khi focus */
+  border-color: #dee2e6; /* Màu viền khi focus */
+}
+
+
+.select-arrow {
+  position: absolute; /* Vị trí tuyệt đối cho mũi tên */
+  right: 15px; /* Khoảng cách từ bên phải */
+  top: 50%; /* Căn giữa theo chiều dọc */
+  transform: translateY(-50%); /* Căn giữa theo chiều dọc */
+  pointer-events: none; /* Không cho phép tương tác với mũi tên */
+  font-size: 16px; /* Kích thước mũi tên */
+  color: #888; /* Màu sắc mũi tên */
+}
+
