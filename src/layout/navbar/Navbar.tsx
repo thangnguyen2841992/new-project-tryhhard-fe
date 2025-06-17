@@ -49,7 +49,7 @@ function Navbar() {
             boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
             marginBottom: '5px',
             position : 'fixed',
-            left : '230px',
+            left : '15%',
             top : '0',
             zIndex : '1'
         }}>

@@ -3,6 +3,8 @@ import Image from "../../model/Image";
 import {Modal} from "react-bootstrap";
 import ImageModal from "../ImageModal";
 import ModalEditImages from "../ModalEditImages";
+import TopicProduct from "../../model/TopicProduct";
+import { getAllTopicProduct } from "../../api/ProductApi";
 
 function ModalCreatePost(props : any) {
     const [title, setTitle] = useState('');
@@ -17,18 +19,10 @@ function ModalCreatePost(props : any) {
 
     const [isShowModalEditImages, setIsShowModalEditImages] = useState(false);
 
-    const topics = [
-        {value : '1', label : 'yeah1'},
-        {value : '2', label : 'yeah2'},
-        {value : '3', label : 'yeah3'},
-        {value : '4', label : 'yeah4'},
-    ]
-    const defaultSelect = {
-        value : '0', label : 'Chủ đề'
-    }
+    const [topics, setTopics] = useState<TopicProduct[]>([]);
+    
 
-
-    const [selectedTopicValue, setSelectedTopicValue] = useState<string>(defaultSelect?.value || '');
+    const [selectedTopicValue, setSelectedTopicValue] = useState<string>(topics[0]?.topicName || '');
 
     const handleChangeTopic = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -123,6 +117,13 @@ function ModalCreatePost(props : any) {
             textareaRef.current.style.height = scrollHeight + "px";
         }
     }, [contentText]);
+
+    useEffect(() => {
+        getAllTopicProduct().then(
+            data  => {
+                setTopics(data);
+            }).catch(error => console.log(error));
+        }, []);
 
 
     const handleCreatePost = async (e: React.FormEvent) => {
@@ -237,17 +238,26 @@ function ModalCreatePost(props : any) {
                                 </button>
                             </div>
                         </div>
-                        <div style={isShowImageForm ? {height : '350px', overflowY : 'scroll'} : {}}>
+                        <div style={isShowImageForm ? {height : '415px', overflowY : 'scroll'} : {}}>
                             <div className="create-post-modal-content">
                                 <div id={'select-option-area'}>
                                 <select id={'modal-create-post-topic-select'} value={selectedTopicValue} onChange={handleChangeTopic}>
                                     {topics.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
+                                        <option key={option.topicId} value={option.topicId}>
+                                            {option.topicName}
                                         </option>
                                     ))}
                                 </select>
                                 <span className="select-arrow">▼</span> {/* Mũi tên */}
+                                    <button disabled style={{position : "absolute",
+                                        top : '1px',
+                                        left : '0',
+                                        borderRadius : '20px',
+                                        outline: 'none',
+                                        border: 'none',
+                                        padding : '10px 20px',
+                                        color : '#fff',
+                                        background : '#dee2e6'}}>Chủ đề</button>
                                 </div>
                                 <input id={'inputTitlePost'} type="text"
                                        placeholder={'Hãy nhập tiêu đề câu hỏi của bạn.'}

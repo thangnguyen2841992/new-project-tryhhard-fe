@@ -693,14 +693,13 @@ input[type="text"]:focus {
 }
 #modal-create-post-topic-select {
   width: 100%; /* Chiều rộng của select */
-  padding: 10px; /* Khoảng cách bên trong */
   font-size: 16px; /* Kích thước chữ */
   border: 1px solid #dee2e6; /* Đường viền */
   border-radius: 20px; /* Bo tròn các góc */
   /*background-color: #f9f9f9; !* Màu nền *!*/
   cursor: pointer; /* Đổi con trỏ chuột */
   transition: border-color 0.3s; /* Hiệu ứng chuyển đổi */
-  padding: 10px 40px 10px 20px; /* Padding bên phải lớn hơn để tạo khoảng cách cho mũi tên */
+  padding: 10px 40px 10px 110px; /* Padding bên phải lớn hơn để tạo khoảng cách cho mũi tên */
   appearance: none;
   color : #333
 }
