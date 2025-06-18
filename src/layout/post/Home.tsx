@@ -6,7 +6,10 @@ import Account from "../../model/Account";
 import {getAccountByAccountId} from "../../api/AccountApi";
 import {getUserToken} from "../../api/PublicApi";
 import Navbar from "../navbar/Navbar";
-import account from "../../model/Account";
+import {getAllTopicProduct} from "../../api/ProductApi";
+import TopicProduct from "../../model/TopicProduct";
+import {Client} from "@stomp/stompjs";
+import SockJS from 'sockjs-client';
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -28,6 +31,44 @@ function Home() {
     const [commentForms, setCommentForms] = useState<{
         [key: number]: boolean
     }>({});
+    const [topics, setTopics] = useState<TopicProduct[]>([]);
+
+    const [selectedTopicValue, setSelectedTopicValue] = useState<string>(topics[0]?.topicName || '');
+
+    const [messages, setMessages] = useState<string[]>([]);
+    const [client, setClient] = useState<Client | null>(null);
+
+    useEffect(() => {
+        const stompClient = new Client({
+            brokerURL: 'ws://localhost:8080/ws',
+            connectHeaders: {
+                login: 'guest',
+                passcode: 'guest',
+            },
+            debug: (str) => {
+                console.log(str);
+            },
+            onConnect: () => {
+                stompClient.subscribe('/topic/messages', (message) => {
+                    if (message.body) {
+                        setMessages((prev) => [...prev, message.body]);
+                        console.log(messages);
+                    }
+                });
+            },
+            webSocketFactory: () => {
+                return new SockJS('http://localhost:8082/ws');
+            },
+        });
+
+        setClient(stompClient);
+        stompClient.activate();
+
+        return () => {
+            stompClient.deactivate();
+        };
+    }, []);
+
 
     useEffect(() => {
         // @ts-ignore
@@ -35,7 +76,12 @@ function Home() {
             setUser(data);
         }).catch((error: any) => {
             console.log(error.message)
-        })
+        });
+
+        getAllTopicProduct().then(
+            data  => {
+                setTopics(data);
+            }).catch(error => console.log(error));
 
     }, []);
     const handleShowModalCreatePost = (e: any) => {
@@ -311,6 +357,8 @@ function Home() {
         {/*    show={isShowImages}*/}
         {/*    setIsShowImages={setIsShowImages}/>*/}
         <ModalCreatePost
+            topics={topics}
+            selectedTopicValue = {selectedTopicValue}
             user={user}
             groupId={0}
             resetProp={resetProp}
@@ -318,7 +366,10 @@ function Home() {
             actionCount={actionCount}
             setActionCount={setActionCount}
             setShowModalCreatePost={setShowModalCreatePost}
-            onHide={handleCloseModalCreatePost}/>
+            onHide={handleCloseModalCreatePost}
+            setSelectedTopicValue = {setSelectedTopicValue}
+            client={client}
+        />
     </div>)
 }
 

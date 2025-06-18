@@ -1,12 +1,13 @@
-import {ChangeEvent, useEffect, useRef, useState} from "react";
+import React, {ChangeEvent, useEffect, useRef, useState} from "react";
 import Image from "../../model/Image";
 import {Modal} from "react-bootstrap";
 import ImageModal from "../ImageModal";
 import ModalEditImages from "../ModalEditImages";
 import TopicProduct from "../../model/TopicProduct";
-import { getAllTopicProduct } from "../../api/ProductApi";
+import {Client} from "@stomp/stompjs";
 
 function ModalCreatePost(props : any) {
+    const [client, setClient] = useState<Client | null>(null);
     const [title, setTitle] = useState('');
     const [contentText, setContentText] = useState('');
     const [status, setStatus] = useState(1);
@@ -19,16 +20,15 @@ function ModalCreatePost(props : any) {
 
     const [isShowModalEditImages, setIsShowModalEditImages] = useState(false);
 
-    const [topics, setTopics] = useState<TopicProduct[]>([]);
-    
-
-    const [selectedTopicValue, setSelectedTopicValue] = useState<string>(topics[0]?.topicName || '');
-
     const handleChangeTopic = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
-        setSelectedTopicValue(value);
+        props.setSelectedTopicValue(value);
     };
 
+    const handleChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setTitle(value);
+    };
 
 
     const handleOpenImageClick = (e: React.FormEvent) => {
@@ -118,48 +118,28 @@ function ModalCreatePost(props : any) {
         }
     }, [contentText]);
 
-    useEffect(() => {
-        getAllTopicProduct().then(
-            data  => {
-                setTopics(data);
-            }).catch(error => console.log(error));
-        }, []);
 
-
-    const handleCreatePost = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const token = localStorage.getItem('token');
-
-        try {
-            const url = `http://localhost:9000/post-api`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-
-                    content: contentText,
-
-                    groupId : props.groupId,
-
-                    statusId: status,
-
-                    email: props.user.email,
-
-                    imageList: imageListData
-                })
+    const handleCreatePost = () => {
+        if (props.client) {
+            let messageSend = JSON.stringify({
+                content: contentText,
+                title : title,
+                statusId: status,
+                topicPostId: props.selectedTopicValue,
+                imageList: imageListData
             })
-            if (response.ok) {
-                props.setShowModalCreatePost(false);
-                props.setActionCount(parseInt(props.actionCount) + 1);
-            } else {
-                console.log(response.json());
-            }
-        }catch (error) {
+            // Kiểm tra kích thước của body
+         let size =   new Blob([messageSend]).size  ;
+            console.log(size);
+
+
+            props.client.publish({ destination: '/app/message',
+                                body: messageSend
+            });
         }
-    }
+    };
+    // @ts-ignore
+    // @ts-ignore
     return (
         <Modal
             {...props}
@@ -241,8 +221,8 @@ function ModalCreatePost(props : any) {
                         <div style={isShowImageForm ? {height : '415px', overflowY : 'scroll'} : {}}>
                             <div className="create-post-modal-content">
                                 <div id={'select-option-area'}>
-                                <select id={'modal-create-post-topic-select'} value={selectedTopicValue} onChange={handleChangeTopic}>
-                                    {topics.map((option) => (
+                                <select id={'modal-create-post-topic-select'} value={props.selectedTopicValue} onChange={handleChangeTopic}>
+                                    {props.topics.map((option : TopicProduct) => (
                                         <option key={option.topicId} value={option.topicId}>
                                             {option.topicName}
                                         </option>
@@ -259,7 +239,7 @@ function ModalCreatePost(props : any) {
                                         color : '#fff',
                                         background : '#dee2e6'}}>Chủ đề</button>
                                 </div>
-                                <input id={'inputTitlePost'} type="text"
+                                <input id={'inputTitlePost'} type="text" value={title} onChange={handleChangeTitle}
                                        placeholder={'Hãy nhập tiêu đề câu hỏi của bạn.'}
                                        style={{
                                            height: '40px',
