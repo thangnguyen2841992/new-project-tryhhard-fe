@@ -4,11 +4,12 @@ import {Modal} from "react-bootstrap";
 import ImageModal from "../ImageModal";
 import ModalEditImages from "../ModalEditImages";
 import TopicProduct from "../../model/TopicProduct";
-import {Client} from "@stomp/stompjs";
+import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
+import {storage} from "../../firebase/firebase";
 
-function ModalCreatePost(props : any) {
-    const [client, setClient] = useState<Client | null>(null);
+function ModalCreatePost(props: any) {
     const [title, setTitle] = useState('');
+    const [isUploadFull, setIsUploadFull] = useState(false);
     const [contentText, setContentText] = useState('');
     const [status, setStatus] = useState(1);
     const [imageListData, setImageListData] = useState<Image[]>([]);
@@ -19,6 +20,8 @@ function ModalCreatePost(props : any) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [isShowModalEditImages, setIsShowModalEditImages] = useState(false);
+    const [imagesLink, setImagesLink] = useState<File[]>([]);
+    const [urls, setUrls] = useState<string[]>([]);
 
     const handleChangeTopic = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -97,10 +100,15 @@ function ModalCreatePost(props : any) {
     const onImagesInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         // @ts-ignore
         const listImageBase64: Image[] = [];
-        // @ts-ignore
-        for (let i = 0; i < event.target.files.length; i++) {
+        const files = event.target.files;
+        if (files) {
+            const fileArray = Array.from(files);
+            setImagesLink(fileArray);
             // @ts-ignore
-            listImageBase64.push({imageData: await getBase64(event.target.files[i])});
+            for (let i = 0; i < files.length; i++) {
+                // @ts-ignore
+                listImageBase64.push({imageData: await getBase64(files[i])});
+            }
         }
         // @ts-ignore
         setImageListData([...imageListData, ...listImageBase64])
@@ -108,6 +116,44 @@ function ModalCreatePost(props : any) {
             fileInputRef.current.value = ''; // Reset the input value to an empty string
         }
     }
+
+
+    const handleUpload = async () => {
+        const uploadedUrls: string[] = [];
+        for (const image of imagesLink) {
+            const imageRef = ref(storage, `images/${image.name}`);
+            try {
+                await uploadBytes(imageRef, image); // Upload file
+                const downloadUrl = await getDownloadURL(imageRef); // Lấy URL
+                uploadedUrls.push(downloadUrl);
+                console.log('File uploaded successfully. URL:', downloadUrl);
+            } catch (error) {
+                console.error('Error uploading file:', error);
+            }
+        }
+        setUrls(uploadedUrls);
+        setIsUploadFull(true);
+    };
+
+    // @ts-ignore
+    // const convertFilesToBlobs = async (files: File[]): Promise<Blob[]> => {
+    //     const blobs: Blob[] = [];
+    //
+    //     for (const file of files) {
+    //         const blob = await new Promise<Blob>((resolve) => {
+    //             const reader = new FileReader();
+    //             reader.onloadend = () => {
+    //                 const arrayBuffer = reader.result as ArrayBuffer;
+    //                 const newBlob = new Blob([arrayBuffer], {type: file.type});
+    //                 resolve(newBlob);
+    //             };
+    //             reader.readAsArrayBuffer(file);
+    //         });
+    //         blobs.push(blob);
+    //     }
+    //     setImageListDataBlob(blobs);
+    //     // return blobs;
+    // };
 
 
     useEffect(() => {
@@ -120,23 +166,30 @@ function ModalCreatePost(props : any) {
 
 
     const handleCreatePost = () => {
-        if (props.client) {
-            let messageSend = JSON.stringify({
-                content: contentText,
-                title : title,
-                statusId: status,
-                topicPostId: props.selectedTopicValue,
-                imageList: imageListData
-            })
-            // Kiểm tra kích thước của body
-         let size =   new Blob([messageSend]).size  ;
-            console.log(size);
+        if (imagesLink.length > 0) {
+            handleUpload();
+            if (isUploadFull) {
+                if (props.client) {
+                    let messageSend = JSON.stringify({
+                        content: contentText,
+                        title: title,
+                        statusId: status,
+                        topicPostId: props.selectedTopicValue != '' ? props.selectedTopicValue : '1',
+                        imageList: urls
+                    })
+                    // Kiểm tra kích thước của body
+                    let size = new Blob([messageSend]).size;
+                    console.log(size);
 
 
-            props.client.publish({ destination: '/app/message',
-                                body: messageSend
-            });
+                    props.client.publish({
+                        destination: '/app/message',
+                        body: messageSend
+                    });
+                }
+            }
         }
+
     };
     // @ts-ignore
     // @ts-ignore
@@ -164,7 +217,7 @@ function ModalCreatePost(props : any) {
 
             </Modal.Header>
             <form onSubmit={handleCreatePost}>
-                <Modal.Body >
+                <Modal.Body>
                     <div className="create-post-modal" style={!isShowStatus ? {display: "block"} : {display: 'none'}}>
                         <div className="create-post-modal-header" style={{display: 'flex', alignItems: 'center'}}>
                             <img src={props.user.avatar} alt="avatar" style={{
@@ -218,26 +271,30 @@ function ModalCreatePost(props : any) {
                                 </button>
                             </div>
                         </div>
-                        <div style={isShowImageForm ? {height : '415px', overflowY : 'scroll'} : {}}>
+                        <div style={isShowImageForm ? {height: '415px', overflowY: 'scroll'} : {}}>
                             <div className="create-post-modal-content">
                                 <div id={'select-option-area'}>
-                                <select id={'modal-create-post-topic-select'} value={props.selectedTopicValue} onChange={handleChangeTopic}>
-                                    {props.topics.map((option : TopicProduct) => (
-                                        <option key={option.topicId} value={option.topicId}>
-                                            {option.topicName}
-                                        </option>
-                                    ))}
-                                </select>
-                                <span className="select-arrow">▼</span> {/* Mũi tên */}
-                                    <button disabled style={{position : "absolute",
-                                        top : '1px',
-                                        left : '0',
-                                        borderRadius : '20px',
+                                    <select id={'modal-create-post-topic-select'} value={props.selectedTopicValue}
+                                            onChange={handleChangeTopic}>
+                                        {props.topics.map((option: TopicProduct) => (
+                                            <option key={option.topicId} value={option.topicId}>
+                                                {option.topicName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <span className="select-arrow">▼</span> {/* Mũi tên */}
+                                    <button disabled style={{
+                                        position: "absolute",
+                                        top: '1px',
+                                        left: '0',
+                                        borderRadius: '20px',
                                         outline: 'none',
                                         border: 'none',
-                                        padding : '10px 20px',
-                                        color : '#fff',
-                                        background : '#dee2e6'}}>Chủ đề</button>
+                                        padding: '10px 20px',
+                                        color: '#fff',
+                                        background: '#dee2e6'
+                                    }}>Chủ đề
+                                    </button>
                                 </div>
                                 <input id={'inputTitlePost'} type="text" value={title} onChange={handleChangeTitle}
                                        placeholder={'Hãy nhập tiêu đề câu hỏi của bạn.'}
@@ -278,7 +335,7 @@ function ModalCreatePost(props : any) {
                                 flexDirection: 'column',
                                 borderRadius: '10px',
                                 margin: '10px 0',
-                                position : 'relative'
+                                position: 'relative'
                             }} onClick={handleOpenImageClick}>
                             <span style={{
                                 padding: '10px',
@@ -290,21 +347,28 @@ function ModalCreatePost(props : any) {
                                 fontSize: '25px'
                             }}><i className='bx bxs-image-add'></i></span>
                                 <strong>Thêm ảnh/video</strong>
-                                <button hidden={!isShowImageForm} onClick={handleCloseImageForm} className={'btn'} style={{
-                                    position: 'absolute',
-                                    background: '#f2f2f2',
-                                    borderRadius: '50%',
-                                    right: '10px',
-                                    top: '10px',
-                                    padding : '5px',
-                                    zIndex : 9999
-                                }}><span style={{fontSize : '30px', display : 'flex', alignItems : 'center'}}><i className='bx bx-x'></i> </span>
+                                <button hidden={!isShowImageForm} onClick={handleCloseImageForm} className={'btn'}
+                                        style={{
+                                            position: 'absolute',
+                                            background: '#f2f2f2',
+                                            borderRadius: '50%',
+                                            right: '10px',
+                                            top: '10px',
+                                            padding: '5px',
+                                            zIndex: 9999
+                                        }}><span style={{fontSize: '30px', display: 'flex', alignItems: 'center'}}><i
+                                    className='bx bx-x'></i> </span>
                                 </button>
                             </div>
 
                             <div className="image-selected-create-modal" hidden={imageListData.length === 0}
-                                 style={{position : "relative", border : '1px solid #e5e5e5', padding : '5px', borderRadius : '10px',
-                                     width : '100%'}}>
+                                 style={{
+                                     position: "relative",
+                                     border: '1px solid #e5e5e5',
+                                     padding: '5px',
+                                     borderRadius: '10px',
+                                     width: '100%'
+                                 }}>
                                 <div className="imageList-modal-wrapper-detail">
                                     <ImageModal imageList={imageListData}/>
                                 </div>
@@ -313,22 +377,29 @@ function ModalCreatePost(props : any) {
                                     left: '10px',
                                     top: '20px',
                                 }}>
-                                    <button onClick={handleShowEditImagesModal} style={{marginRight : '10px', border : '1px solid #e5e5e5'}}  className={'btn btn-light'}><i className='bx bx-edit-alt' ></i> Chỉnh sửa tất cả</button>
-                                    <button style={{ border : '1px solid #e5e5e5'}}  onClick={handleOpenImageClick}  className={'btn btn-light'}><i className='bx bx-image-add' ></i> Thêm ảnh</button>
+                                    <button onClick={handleShowEditImagesModal}
+                                            style={{marginRight: '10px', border: '1px solid #e5e5e5'}}
+                                            className={'btn btn-light'}><i className='bx bx-edit-alt'></i> Chỉnh sửa tất
+                                        cả
+                                    </button>
+                                    <button style={{border: '1px solid #e5e5e5'}} onClick={handleOpenImageClick}
+                                            className={'btn btn-light'}><i className='bx bx-image-add'></i> Thêm ảnh
+                                    </button>
                                 </div>
-                                <button title={'Xóa hết ảnh'} hidden={!isShowImageForm} onClick={handleCloseImageForm} className={'btn'} style={{
+                                <button title={'Xóa hết ảnh'} hidden={!isShowImageForm} onClick={handleCloseImageForm}
+                                        className={'btn'} style={{
                                     position: 'absolute',
                                     background: '#f2f2f2',
                                     borderRadius: '50%',
                                     right: '10px',
                                     top: '15px',
-                                    padding : '5px',
-                                    zIndex : 9999
-                                }}><span style={{fontSize : '30px', display : 'flex', alignItems : 'center'}}><i className='bx bx-x'></i> </span>
+                                    padding: '5px',
+                                    zIndex: 9999
+                                }}><span style={{fontSize: '30px', display: 'flex', alignItems: 'center'}}><i
+                                    className='bx bx-x'></i> </span>
                                 </button>
                             </div>
                         </div>
-
 
 
                         <input type="file" multiple style={{display: 'none'}}
@@ -455,7 +526,7 @@ function ModalCreatePost(props : any) {
                 </Modal.Body>
                 <Modal.Footer>
                     <div hidden={isShowStatus} className="create-post-modal-add-more" style={{
-                        width : '100%',
+                        width: '100%',
                         padding: '5px 10px',
                         border: '1px solid #e5e5e5',
                         display: 'flex',
@@ -475,7 +546,8 @@ function ModalCreatePost(props : any) {
 
 
                     </div>
-                    <button disabled={contentText === '' && imageListData.length === 0} style={!isShowStatus ? {display: "block", width: '100%'} : {display: 'none'}}
+                    <button disabled={contentText === '' && imageListData.length === 0}
+                            style={!isShowStatus ? {display: "block", width: '100%'} : {display: 'none'}}
                             className="btn" id="registerBtn">Đăng
                     </button>
                     <div className="btnShowStatus"
@@ -500,4 +572,5 @@ function ModalCreatePost(props : any) {
 
 
 }
+
 export default ModalCreatePost
