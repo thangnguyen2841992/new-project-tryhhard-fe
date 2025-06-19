@@ -5,7 +5,7 @@ import ImageModal from "../ImageModal";
 import ModalEditImages from "../ModalEditImages";
 import TopicProduct from "../../model/TopicProduct";
 import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
-import {storage} from "../../firebase/firebase";
+import {imageDb} from "../../firebase/ConfigFireBase";
 
 function ModalCreatePost(props: any) {
     const [title, setTitle] = useState('');
@@ -98,30 +98,36 @@ function ModalCreatePost(props: any) {
     };
 
     const onImagesInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const uploadedUrls: string[] = [];
         // @ts-ignore
         const listImageBase64: Image[] = [];
         const files = event.target.files;
         if (files) {
-            const fileArray = Array.from(files);
-            setImagesLink(fileArray);
-            // @ts-ignore
-            for (let i = 0; i < files.length; i++) {
-                // @ts-ignore
-                listImageBase64.push({imageData: await getBase64(files[i])});
+            for (const image of Array.from(files) ) {
+                const imageRef = ref(imageDb, `images/${image.name}`);
+                try {
+                    await uploadBytes(imageRef, image); // Upload file
+                    const downloadUrl = await getDownloadURL(imageRef); // Lấy URL
+                    uploadedUrls.push(downloadUrl);
+                    console.log('File uploaded successfully. URL:', downloadUrl);
+                } catch (error) {
+                    console.error('Error uploading file:', error);
+                }
             }
+            setUrls(uploadedUrls);
         }
         // @ts-ignore
-        setImageListData([...imageListData, ...listImageBase64])
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ''; // Reset the input value to an empty string
-        }
+        // setImageListData([...imageListData, ...listImageBase64])
+        // if (fileInputRef.current) {
+        //     fileInputRef.current.value = ''; // Reset the input value to an empty string
+        // }
     }
 
 
     const handleUpload = async () => {
         const uploadedUrls: string[] = [];
         for (const image of imagesLink) {
-            const imageRef = ref(storage, `images/${image.name}`);
+            const imageRef = ref(imageDb, `images/${image.name}`);
             try {
                 await uploadBytes(imageRef, image); // Upload file
                 const downloadUrl = await getDownloadURL(imageRef); // Lấy URL
@@ -166,31 +172,51 @@ function ModalCreatePost(props: any) {
 
 
     const handleCreatePost = () => {
-        if (imagesLink.length > 0) {
-            handleUpload();
-            if (isUploadFull) {
-                if (props.client) {
-                    let messageSend = JSON.stringify({
-                        content: contentText,
-                        title: title,
-                        statusId: status,
-                        topicPostId: props.selectedTopicValue != '' ? props.selectedTopicValue : '1',
-                        imageList: urls
-                    })
-                    // Kiểm tra kích thước của body
-                    let size = new Blob([messageSend]).size;
-                    console.log(size);
+        if (props.client) {
+            let messageSend = JSON.stringify({
+                content: contentText,
+                title : title,
+                statusId: status,
+                topicPostId: props.selectedTopicValue,
+                imageList: imageListData
+            })
+            // Kiểm tra kích thước của body
+            let size =   new Blob([messageSend]).size  ;
+            console.log(size);
 
 
-                    props.client.publish({
-                        destination: '/app/message',
-                        body: messageSend
-                    });
-                }
-            }
+            props.client.publish({ destination: '/app/message',
+                body: messageSend
+            });
         }
-
     };
+
+    // const handleCreatePost = () => {
+    //     if (imagesLink.length > 0) {
+    //         handleUpload();
+    //         if (isUploadFull) {
+    //             if (props.client) {
+    //                 let messageSend = JSON.stringify({
+    //                     content: contentText,
+    //                     title: title,
+    //                     statusId: status,
+    //                     topicPostId: props.selectedTopicValue != '' ? props.selectedTopicValue : '1',
+    //                     imageList: urls
+    //                 })
+    //                 // Kiểm tra kích thước của body
+    //                 let size = new Blob([messageSend]).size;
+    //                 console.log(size);
+    //
+    //
+    //                 props.client.publish({
+    //                     destination: '/app/message',
+    //                     body: messageSend
+    //                 });
+    //             }
+    //         }
+    //     }
+    //
+    // };
     // @ts-ignore
     // @ts-ignore
     return (
@@ -216,7 +242,7 @@ function ModalCreatePost(props: any) {
                 </Modal.Title>
 
             </Modal.Header>
-            <form onSubmit={handleCreatePost}>
+            <div>
                 <Modal.Body>
                     <div className="create-post-modal" style={!isShowStatus ? {display: "block"} : {display: 'none'}}>
                         <div className="create-post-modal-header" style={{display: 'flex', alignItems: 'center'}}>
@@ -546,7 +572,7 @@ function ModalCreatePost(props: any) {
 
 
                     </div>
-                    <button disabled={contentText === '' && imageListData.length === 0}
+                    <button onClick={handleCreatePost} disabled={contentText === '' && imageListData.length === 0}
                             style={!isShowStatus ? {display: "block", width: '100%'} : {display: 'none'}}
                             className="btn" id="registerBtn">Đăng
                     </button>
@@ -559,7 +585,7 @@ function ModalCreatePost(props: any) {
                         </button>
                     </div>
                 </Modal.Footer>
-            </form>
+            </div>
             <ModalEditImages
                 show={isShowModalEditImages}
                 images={imageListData}
