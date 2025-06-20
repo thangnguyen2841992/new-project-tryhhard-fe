@@ -46,7 +46,7 @@ const ImageModal: React.FC<ImagesModalInterface> = ({imageList}) => {
     else if (imageList.length === 1) {
         return (
             <div key={imageList[0].imageId} className="post-detail-image-item-one">
-                <img src={imageList[0].imageData} alt=""/>
+                <img src={imageList[0].imageData} alt="thang"/>
             </div>
         )
     } else if (imageList.length === 3) {

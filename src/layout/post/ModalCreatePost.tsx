@@ -6,10 +6,12 @@ import ModalEditImages from "../ModalEditImages";
 import TopicProduct from "../../model/TopicProduct";
 import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
 import {imageDb} from "../../firebase/ConfigFireBase";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 function ModalCreatePost(props: any) {
     const [title, setTitle] = useState('');
-    const [isUploadFull, setIsUploadFull] = useState(false);
+    const [isUploadFinished, setIsUploadFinished] = useState(false);
+    const [isUploadProcessing, setIsUploadProcessing] = useState(false);
     const [contentText, setContentText] = useState('');
     const [status, setStatus] = useState(1);
     const [imageListData, setImageListData] = useState<Image[]>([]);
@@ -20,8 +22,6 @@ function ModalCreatePost(props: any) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [isShowModalEditImages, setIsShowModalEditImages] = useState(false);
-    const [imagesLink, setImagesLink] = useState<File[]>([]);
-    const [urls, setUrls] = useState<string[]>([]);
 
     const handleChangeTopic = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -55,9 +55,7 @@ function ModalCreatePost(props: any) {
                 fileInputRef.current.value = ''; // Reset the input value to an empty string
             }
         }
-
     }
-
 
     const handleChangeContent = (e: ChangeEvent<HTMLTextAreaElement>) => {
         setContentText(e.target.value.trim());
@@ -87,80 +85,28 @@ function ModalCreatePost(props: any) {
     }
 
 
-    // Convert file to Base64
-    const getBase64 = (file: File): Promise<string | null> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result ? (reader.result as string) : null);
-            reader.onerror = (error) => reject(error);
-        });
-    };
-
     const onImagesInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const uploadedUrls: string[] = [];
+        setIsUploadProcessing(true);
+        const uploadedUrls: Image[] = [];
         // @ts-ignore
-        const listImageBase64: Image[] = [];
         const files = event.target.files;
         if (files) {
-            for (const image of Array.from(files) ) {
+            for (const image of Array.from(files)) {
                 const imageRef = ref(imageDb, `images/${image.name}`);
                 try {
                     await uploadBytes(imageRef, image); // Upload file
                     const downloadUrl = await getDownloadURL(imageRef); // Lấy URL
-                    uploadedUrls.push(downloadUrl);
+                    uploadedUrls.push({imageData: downloadUrl});
                     console.log('File uploaded successfully. URL:', downloadUrl);
                 } catch (error) {
                     console.error('Error uploading file:', error);
                 }
             }
-            setUrls(uploadedUrls);
+            setImageListData(uploadedUrls);
+            setIsUploadFinished(true);
+            setIsUploadProcessing(false);
         }
-        // @ts-ignore
-        // setImageListData([...imageListData, ...listImageBase64])
-        // if (fileInputRef.current) {
-        //     fileInputRef.current.value = ''; // Reset the input value to an empty string
-        // }
     }
-
-
-    const handleUpload = async () => {
-        const uploadedUrls: string[] = [];
-        for (const image of imagesLink) {
-            const imageRef = ref(imageDb, `images/${image.name}`);
-            try {
-                await uploadBytes(imageRef, image); // Upload file
-                const downloadUrl = await getDownloadURL(imageRef); // Lấy URL
-                uploadedUrls.push(downloadUrl);
-                console.log('File uploaded successfully. URL:', downloadUrl);
-            } catch (error) {
-                console.error('Error uploading file:', error);
-            }
-        }
-        setUrls(uploadedUrls);
-        setIsUploadFull(true);
-    };
-
-    // @ts-ignore
-    // const convertFilesToBlobs = async (files: File[]): Promise<Blob[]> => {
-    //     const blobs: Blob[] = [];
-    //
-    //     for (const file of files) {
-    //         const blob = await new Promise<Blob>((resolve) => {
-    //             const reader = new FileReader();
-    //             reader.onloadend = () => {
-    //                 const arrayBuffer = reader.result as ArrayBuffer;
-    //                 const newBlob = new Blob([arrayBuffer], {type: file.type});
-    //                 resolve(newBlob);
-    //             };
-    //             reader.readAsArrayBuffer(file);
-    //         });
-    //         blobs.push(blob);
-    //     }
-    //     setImageListDataBlob(blobs);
-    //     // return blobs;
-    // };
-
 
     useEffect(() => {
         if (textareaRef && textareaRef.current) {
@@ -170,54 +116,23 @@ function ModalCreatePost(props: any) {
         }
     }, [contentText]);
 
-
     const handleCreatePost = () => {
         if (props.client) {
             let messageSend = JSON.stringify({
                 content: contentText,
-                title : title,
+                title: title,
                 statusId: status,
-                topicPostId: props.selectedTopicValue,
+                topicPostId: props.selectedTopicValue == '' ? '1' : props.selectedTopicValue,
                 imageList: imageListData
             })
-            // Kiểm tra kích thước của body
-            let size =   new Blob([messageSend]).size  ;
-            console.log(size);
 
-
-            props.client.publish({ destination: '/app/message',
+            props.client.publish({
+                destination: '/app/message',
                 body: messageSend
             });
         }
     };
 
-    // const handleCreatePost = () => {
-    //     if (imagesLink.length > 0) {
-    //         handleUpload();
-    //         if (isUploadFull) {
-    //             if (props.client) {
-    //                 let messageSend = JSON.stringify({
-    //                     content: contentText,
-    //                     title: title,
-    //                     statusId: status,
-    //                     topicPostId: props.selectedTopicValue != '' ? props.selectedTopicValue : '1',
-    //                     imageList: urls
-    //                 })
-    //                 // Kiểm tra kích thước của body
-    //                 let size = new Blob([messageSend]).size;
-    //                 console.log(size);
-    //
-    //
-    //                 props.client.publish({
-    //                     destination: '/app/message',
-    //                     body: messageSend
-    //                 });
-    //             }
-    //         }
-    //     }
-    //
-    // };
-    // @ts-ignore
     // @ts-ignore
     return (
         <Modal
@@ -225,6 +140,13 @@ function ModalCreatePost(props: any) {
             size="md"
             aria-labelledby="contained-modal-title-vcenter"
             centered
+            style={isUploadProcessing ? {
+                pointerEvents: 'none',
+                opacity: '0.5'
+            } : {
+                pointerEvents: 'auto',
+                opacity: '1'
+            }}
         >
             <Modal.Header closeButton hidden={isShowStatus}>
                 <Modal.Title id="contained-modal-title-vcenter">
@@ -332,7 +254,6 @@ function ModalCreatePost(props: any) {
                                            outline: 'none',
                                            padding: '0 20px',
                                            fontSize: '15px',
-                                           // background: '#f2f2f2',
                                            marginTop: '10px'
                                        }}/>
                                 <textarea
@@ -372,6 +293,9 @@ function ModalCreatePost(props: any) {
                                 alignItems: 'center',
                                 fontSize: '25px'
                             }}><i className='bx bxs-image-add'></i></span>
+                                <div className={'loadingBarArea'} hidden={!isUploadProcessing}>
+                                    <LoadingSpinner/>
+                                </div>
                                 <strong>Thêm ảnh/video</strong>
                                 <button hidden={!isShowImageForm} onClick={handleCloseImageForm} className={'btn'}
                                         style={{
@@ -426,13 +350,9 @@ function ModalCreatePost(props: any) {
                                 </button>
                             </div>
                         </div>
-
-
                         <input type="file" multiple style={{display: 'none'}}
                                ref={fileInputRef}
                                onChange={onImagesInputChange}/>
-
-
                     </div>
                     <div className="create-post-modal-status"
                          style={isShowStatus ? {display: "block"} : {display: 'none'}}>
@@ -556,7 +476,6 @@ function ModalCreatePost(props: any) {
                         padding: '5px 10px',
                         border: '1px solid #e5e5e5',
                         display: 'flex',
-                        // justifyContent: 'space-between',
                         alignItems: 'center',
                         borderRadius: '10px'
                     }}>
@@ -569,10 +488,9 @@ function ModalCreatePost(props: any) {
                             <span style={{color: '#1877F2'}} title={'Gắn thẻ người khác'}><i
                                 className='bx bxs-user-plus'></i></span>
                         </div>
-
-
                     </div>
-                    <button onClick={handleCreatePost} disabled={contentText === '' && imageListData.length === 0}
+                    <button onClick={handleCreatePost}
+                            disabled={(contentText === '' && imageListData.length === 0) || (!isUploadFinished)}
                             style={!isShowStatus ? {display: "block", width: '100%'} : {display: 'none'}}
                             className="btn" id="registerBtn">Đăng
                     </button>
@@ -595,8 +513,6 @@ function ModalCreatePost(props: any) {
         </Modal>
 
     )
-
-
 }
 
 export default ModalCreatePost
