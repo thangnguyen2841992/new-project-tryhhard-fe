@@ -79,7 +79,7 @@ function Home() {
         });
 
         getAllTopicProduct().then(
-            data  => {
+            data => {
                 setTopics(data);
             }).catch(error => console.log(error));
 
@@ -97,7 +97,7 @@ function Home() {
         setResetProp(true);
     }
 
-    const handleSearch = (e : React.FormEvent) => {
+    const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
     }
     return (<div>
@@ -112,7 +112,7 @@ function Home() {
                 backgroundColor: '#F2A3B5'
             }}>
                 <div className="home-content-left-user"
-                     style={{marginLeft: '5px', marginBottom: '10px', marginTop : '10px'}}>
+                     style={{marginLeft: '5px', marginBottom: '10px', marginTop: '10px'}}>
                     <img src={'/sakura-removebg-preview.png'} alt="avatar"
                          style={{width: '150px', height: "100px", objectFit: 'cover', marginRight: '10px'}}/>
                 </div>
@@ -322,7 +322,7 @@ function Home() {
                     position: 'relative',
                 }}>
                     <form onSubmit={handleSearch}>
-                        <input  type="text" placeholder="Tìm kiếm"
+                        <input type="text" placeholder="Tìm kiếm"
                                style={{
                                    height: '50px',
                                    width: '100%',
@@ -358,7 +358,7 @@ function Home() {
         {/*    setIsShowImages={setIsShowImages}/>*/}
         <ModalCreatePost
             topics={topics}
-            selectedTopicValue = {selectedTopicValue}
+            selectedTopicValue={selectedTopicValue}
             user={user}
             groupId={0}
             resetProp={resetProp}
@@ -367,7 +367,7 @@ function Home() {
             setActionCount={setActionCount}
             setShowModalCreatePost={setShowModalCreatePost}
             onHide={handleCloseModalCreatePost}
-            setSelectedTopicValue = {setSelectedTopicValue}
+            setSelectedTopicValue={setSelectedTopicValue}
             client={client}
         />
     </div>)

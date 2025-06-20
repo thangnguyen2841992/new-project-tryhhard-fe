@@ -7,10 +7,10 @@ import TopicProduct from "../../model/TopicProduct";
 import {getDownloadURL, ref, uploadBytes} from "firebase/storage";
 import {imageDb} from "../../firebase/ConfigFireBase";
 import LoadingSpinner from "../common/LoadingSpinner";
+import {getUserToken} from "../../api/PublicApi";
 
 function ModalCreatePost(props: any) {
     const [title, setTitle] = useState('');
-    const [isUploadFinished, setIsUploadFinished] = useState(false);
     const [isUploadProcessing, setIsUploadProcessing] = useState(false);
     const [contentText, setContentText] = useState('');
     const [status, setStatus] = useState(1);
@@ -32,7 +32,6 @@ function ModalCreatePost(props: any) {
         const value = e.target.value;
         setTitle(value);
     };
-
 
     const handleOpenImageClick = (e: React.FormEvent) => {
         e.preventDefault();
@@ -84,7 +83,6 @@ function ModalCreatePost(props: any) {
         setIsShowModalEditImages(true);
     }
 
-
     const onImagesInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         setIsUploadProcessing(true);
         const uploadedUrls: Image[] = [];
@@ -103,7 +101,6 @@ function ModalCreatePost(props: any) {
                 }
             }
             setImageListData(uploadedUrls);
-            setIsUploadFinished(true);
             setIsUploadProcessing(false);
         }
     }
@@ -122,7 +119,8 @@ function ModalCreatePost(props: any) {
                 content: contentText,
                 title: title,
                 statusId: status,
-                topicPostId: props.selectedTopicValue == '' ? '1' : props.selectedTopicValue,
+                accountId: getUserToken().accountId,
+                topicPostId: props.selectedTopicValue === '' ? '1' : props.selectedTopicValue,
                 imageList: imageListData
             })
 
@@ -483,14 +481,20 @@ function ModalCreatePost(props: any) {
                             <strong>Thêm vào bài viết của bạn</strong>
                         </div>
                         <div className="create-post-modal-add-more-icon">
-                                <span onClick={handleShowImageForm} style={{color: '#45BD62'}} title={'Ảnh/video'}><i
-                                    className='bx bx-images'></i></span>
-                            <span style={{color: '#1877F2'}} title={'Gắn thẻ người khác'}><i
-                                className='bx bxs-user-plus'></i></span>
+                                <span onClick={handleShowImageForm} style={{color: '#45BD62'}} title={'Ảnh/video'}>
+                                    <svg style={{marginTop : '-16px'}} xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960"
+                                         width="30px" fill="rgb(69, 189, 98)"><path
+                                        d="M440-438ZM106.67-120q-27 0-46.84-19.83Q40-159.67 40-186.67v-502q0-26.33 19.83-46.5 19.84-20.16 46.84-20.16h140L320-840h262.67v66.67H350.33l-73 84.66H106.67v502h666.66v-396H840v396q0 27-20.17 46.84Q799.67-120 773.33-120H106.67Zm666.66-569.33v-84h-84V-840h84v-84.67H840V-840h84.67v66.67H840v84h-66.67ZM439.67-264.67q73.33 0 123.5-50.16 50.16-50.17 50.16-123.5 0-73.34-50.16-123.17-50.17-49.83-123.5-49.83-73.34 0-123.17 49.83t-49.83 123.17q0 73.33 49.83 123.5 49.83 50.16 123.17 50.16Zm0-66.66q-45.67 0-76-30.67-30.34-30.67-30.34-76.33 0-45.67 30.34-76 30.33-30.34 76-30.34 45.66 0 76.33 30.34 30.67 30.33 30.67 76 0 45.66-30.67 76.33t-76.33 30.67Z"/></svg>
+                                </span>
+                            <span style={{color: '#1877F2'}} title={'Gắn thẻ người khác'}>
+                                <svg style={{marginTop : '-16px'}} xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960"
+                                     width="30px" fill="rgb(24, 119, 242)"><path
+                                    d="M720-400v-120H600v-80h120v-120h80v120h120v80H800v120h-80Zm-360-80q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm80-80h480v-32q0-11-5.5-20T580-306q-54-27-109-40.5T360-360q-56 0-111 13.5T140-306q-9 5-14.5 14t-5.5 20v32Zm240-320q33 0 56.5-23.5T440-640q0-33-23.5-56.5T360-720q-33 0-56.5 23.5T280-640q0 33 23.5 56.5T360-560Zm0-80Zm0 400Z"/></svg>
+                            </span>
                         </div>
                     </div>
                     <button onClick={handleCreatePost}
-                            disabled={(contentText === '' && imageListData.length === 0) || (!isUploadFinished)}
+                            disabled={(contentText === '' && imageListData.length === 0 && !isUploadProcessing)}
                             style={!isShowStatus ? {display: "block", width: '100%'} : {display: 'none'}}
                             className="btn" id="registerBtn">Đăng
                     </button>
