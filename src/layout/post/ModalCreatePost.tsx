@@ -14,6 +14,7 @@ function ModalCreatePost(props: any) {
     const [isUploadProcessing, setIsUploadProcessing] = useState(false);
     const [contentText, setContentText] = useState('');
     const [status, setStatus] = useState(1);
+    const [topicName, setTopicName] = useState('');
     const [imageListData, setImageListData] = useState<Image[]>([]);
 
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -26,6 +27,7 @@ function ModalCreatePost(props: any) {
     const handleChangeTopic = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
         props.setSelectedTopicValue(value);
+        setTopicName(event.target.options[event.target.selectedIndex].text);
     };
 
     const handleChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
@@ -120,7 +122,10 @@ function ModalCreatePost(props: any) {
                 title: title,
                 statusId: status,
                 accountId: getUserToken().accountId,
+                fullName: getUserToken().fullName,
+                avatar: getUserToken().avatar,
                 topicPostId: props.selectedTopicValue === '' ? '1' : props.selectedTopicValue,
+                topicPostName: topicName,
                 imageList: imageListData
             })
 

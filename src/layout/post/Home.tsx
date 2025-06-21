@@ -10,6 +10,8 @@ import {getAllTopicProduct} from "../../api/ProductApi";
 import TopicProduct from "../../model/TopicProduct";
 import {Client} from "@stomp/stompjs";
 import SockJS from 'sockjs-client';
+import Post from "../../model/Post";
+import CalculateTime from "./CalculateTime";
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -37,6 +39,7 @@ function Home() {
 
     const [messages, setMessages] = useState<string[]>([]);
     const [client, setClient] = useState<Client | null>(null);
+    const [posts, setPosts] = useState<Post[]>([]);
 
     useEffect(() => {
         const stompClient = new Client({
@@ -49,11 +52,9 @@ function Home() {
                 console.log(str);
             },
             onConnect: () => {
-                stompClient.subscribe('/topic/messages', (message) => {
-                    if (message.body) {
-                        setMessages((prev) => [...prev, message.body]);
-                        console.log(messages);
-                    }
+                stompClient.subscribe('/topic/posts', (message) => {
+                    const post = JSON.parse(message.body);
+                        setPosts((prev) => [...prev, post]);
                 });
             },
             webSocketFactory: () => {
@@ -221,7 +222,7 @@ function Home() {
                 </div>
             </div>
             <div className="home-content-center" style={{width: '60%', marginTop: '90px', marginLeft: '20%'}}>
-                <div className="form-create-post-wrapper">
+                <div className="form-create-post-wrapper" style={{marginBottom : '20px'}}>
                     <div className="create-post-top">
                         {/*<div className="create-post-avatar"><img src={avatar.imageData} alt="avatar"/></div>*/}
                         <div className="create-post-input"><input style={{paddingLeft: '50px'}}
@@ -237,81 +238,100 @@ function Home() {
 
                     </div>
                 </div>
-                {/*{*/}
-                {/*    posts.map((post) => (*/}
-                {/*        <div key={post.postId} className="post-detail-wrapper"*/}
-                {/*             style={{*/}
-                {/*                 padding: "20px",*/}
-                {/*                 background: "#f2f2f2",*/}
-                {/*                 borderRadius: "10px",*/}
-                {/*                 marginBottom: '20px'*/}
-                {/*             }}>*/}
-                {/*            <div className="post-detail-header">*/}
-                {/*                <PostDetailLeft post={post}/>*/}
+                {
+                    posts.map((post) => (
+                        <div key={post.postId} className="post-detail-wrapper"
+                             style={{
+                                 padding: "20px",
+                                 background: "#f2f2f2",
+                                 borderRadius: "10px",
+                                 marginBottom: '20px'
+                             }}>
+                            <div className="post-detail-title" style={{marginBottom: '20px'}}>
+                                <h3>{post.title}</h3>
+                            </div>
+                            <div className="post-detail-acc" style={{display : 'flex'}}>
+                                <div className="post-detail-acc-left">
+                                    <img src={post.avatar} alt="avatar"
+                                         style={{
+                                             width: '50px',
+                                             height: "50px",
+                                             objectFit: 'cover',
+                                             marginRight: '10px',
+                                             borderRadius: '50%'
+                                         }}/>
+                                </div>
+                                <div className="post-detail-acc-right">
+                                    <p>{post.fullName}</p>
+                                    {/*// @ts-ignore*/}
+                                    <CalculateTime dateCreated = {post.dateCreated} />
+                                </div>
+                            </div>
+                            <div style={{borderLeft : '2px solid #b1b6c9', padding: ' 0 10px', marginBottom: '10px', color : '#7a809b'}} className="post-detail-topicName">
+                                {post.topicPostName}
+                            </div>
+                            <div className="post-detail-content"
+                                 style={{fontSize: '18px', marginBottom: '20px'}}>
+                                {post.content}
+                            </div>
 
-                {/*            </div>*/}
-                {/*            <div className="post-detail-content"*/}
-                {/*                 style={{fontSize: '18px', marginBottom: '20px'}}>*/}
-                {/*                {post.content}*/}
-                {/*            </div>*/}
+                            {/*<div className="post-detail-image-wrapper" style={{marginBottom: '5px'}}>*/}
+                            {/*    <Images post={post} postId={postId} setPostId={setPostId}*/}
+                            {/*            isShowImages={isShowImages} setIsShowImages={setIsShowImages}*/}
+                            {/*            image={image} setImage={setImage}*/}
+                            {/*            isReload={isReloadImgs}/>*/}
+                            {/*</div>*/}
+                            {/*<div style={{display: 'flex', justifyContent: 'space-between'}}>*/}
+                            {/*    <div>*/}
+                            {/*        <TotalLikePost postId={post.postId ? post.postId : 0}*/}
+                            {/*                       resetTotalLike={resetTotalLike} resetComment={resetComment}*/}
+                            {/*                       showComments={showComments} setShowComments={setShowComments}/>*/}
+                            {/*    </div>*/}
+                            {/*    <div style={{cursor: "pointer"}}*/}
+                            {/*         onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}>*/}
+                            {/*        <TotalCommentOfPost postId={post.postId ? post.postId : 0}*/}
+                            {/*                            resetComment={resetComment}/>*/}
+                            {/*    </div>*/}
 
-                {/*            <div className="post-detail-image-wrapper" style={{marginBottom: '5px'}}>*/}
-                {/*                <Images post={post} postId={postId} setPostId={setPostId}*/}
-                {/*                        isShowImages={isShowImages} setIsShowImages={setIsShowImages}*/}
-                {/*                        image={image} setImage={setImage}*/}
-                {/*                        isReload={isReloadImgs}/>*/}
-                {/*            </div>*/}
-                {/*            <div style={{display: 'flex', justifyContent: 'space-between'}}>*/}
-                {/*                <div>*/}
-                {/*                    <TotalLikePost postId={post.postId ? post.postId : 0}*/}
-                {/*                                   resetTotalLike={resetTotalLike} resetComment={resetComment}*/}
-                {/*                                   showComments={showComments} setShowComments={setShowComments}/>*/}
-                {/*                </div>*/}
-                {/*                <div style={{cursor: "pointer"}}*/}
-                {/*                     onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}>*/}
-                {/*                    <TotalCommentOfPost postId={post.postId ? post.postId : 0}*/}
-                {/*                                        resetComment={resetComment}/>*/}
-                {/*                </div>*/}
-
-                {/*            </div>*/}
-
-
-                {/*            <div className="post-detail-like-wrapper" style={{*/}
-                {/*                width: '100%',*/}
-                {/*                display: 'flex',*/}
-                {/*                padding: '5px',*/}
-                {/*            }}>*/}
-                {/*                <div style={{paddingRight: '5px', width: '50%'}}>*/}
-                {/*                    <ButtonListPost post={post} resetTotalLike={resetTotalLike}*/}
-                {/*                                    setResetTotalLike={setResetTotalLike}/>*/}
-
-                {/*                </div>*/}
-                {/*                <div style={{paddingLeft: '5px', width: '50%'}}>*/}
-                {/*                    <button*/}
-                {/*                        onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}*/}
-                {/*                        style={{width: '100%', border: '1px solid #e5e5e5'}}*/}
-                {/*                        className="postDetailDisLikeBtn btn btn-light"><span><i*/}
-                {/*                        className='bx bx-message-rounded-dots'></i></span> <span>Bình luận</span>*/}
-                {/*                    </button>*/}
-                {/*                </div>*/}
-
-
-                {/*            </div>*/}
-                {/*            {commentForms[post.postId ? post.postId : 0] && (*/}
-                {/*                <ListComment postId={post.postId ? post.postId : 0} imageId={0}*/}
-                {/*                             resetComment={resetComment}/>*/}
+                            {/*</div>*/}
 
 
-                {/*            )}*/}
-                {/*            {commentForms[post.postId ? post.postId : 0] && (*/}
+                            <div className="post-detail-like-wrapper" style={{
+                                width: '100%',
+                                display: 'flex',
+                                padding: '5px',
+                            }}>
+                                {/*<div style={{paddingRight: '5px', width: '50%'}}>*/}
+                                {/*    <ButtonListPost post={post} resetTotalLike={resetTotalLike}*/}
+                                {/*                    setResetTotalLike={setResetTotalLike}/>*/}
 
-                {/*                <CommentForm postId={post.postId ? post.postId : 0} imageId={0}*/}
-                {/*                             resetComment={resetComment} setResetComment={setResetComment}/>*/}
+                                {/*</div>*/}
+                                {/*<div style={{paddingLeft: '5px', width: '50%'}}>*/}
+                                {/*    <button*/}
+                                {/*        onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}*/}
+                                {/*        style={{width: '100%', border: '1px solid #e5e5e5'}}*/}
+                                {/*        className="postDetailDisLikeBtn btn btn-light"><span><i*/}
+                                {/*        className='bx bx-message-rounded-dots'></i></span> <span>Bình luận</span>*/}
+                                {/*    </button>*/}
+                                {/*</div>*/}
 
-                {/*            )}*/}
-                {/*        </div>*/}
-                {/*    ))*/}
-                {/*}*/}
+
+                            </div>
+                            {/*{commentForms[post.postId ? post.postId : 0] && (*/}
+                            {/*    <ListComment postId={post.postId ? post.postId : 0} imageId={0}*/}
+                            {/*                 resetComment={resetComment}/>*/}
+
+
+                            {/*)}*/}
+                            {/*{commentForms[post.postId ? post.postId : 0] && (*/}
+
+                            {/*    <CommentForm postId={post.postId ? post.postId : 0} imageId={0}*/}
+                            {/*                 resetComment={resetComment} setResetComment={setResetComment}/>*/}
+
+                            {/*)}*/}
+                        </div>
+                    ))
+                }
 
 
             </div>
