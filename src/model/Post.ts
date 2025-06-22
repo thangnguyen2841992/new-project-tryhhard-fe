@@ -4,18 +4,15 @@ class Post {
     fullName ?: string;
     avatar ?: string;
     title ?: string;
-
     content ?: string;
-
     dateCreated ?: Date;
-
     topicPostId ?: number;
     topicPostName ?: string;
-    
     statusPostId ?: number;
+    statusPostName ?: string;
 
 
-    constructor(postId: number, accountId: number, fullName: string, avatar: string, title: string, content: string, dateCreated: Date, topicPostId: number, topicPostName: string, statusPostId: number) {
+    constructor(postId: number, accountId: number, fullName: string, avatar: string, title: string, content: string, dateCreated: Date, topicPostId: number, topicPostName: string, statusPostId: number, statusPostName : string) {
         this.postId = postId;
         this.accountId = accountId;
         this.fullName = fullName;
@@ -26,6 +23,7 @@ class Post {
         this.topicPostId = topicPostId;
         this.topicPostName = topicPostName;
         this.statusPostId = statusPostId;
+        this.statusPostName = statusPostName;
     }
 }
 

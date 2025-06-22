@@ -25,7 +25,7 @@
   cursor: pointer;
   transition: 0.5s;
   color: black;;
-  background: #e5e5e5;
+  background: #fff;
 }
 
 .notification-wrapper button:hover {
@@ -276,7 +276,7 @@
 }
 
 .create-post-input {
-  width: 90%;
+  width: 100%;
 }
 
 .create-post-input input {

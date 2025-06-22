@@ -70,7 +70,7 @@ function Navbar() {
                      marginRight : '6%'
                  }}>
                 <div className="notification-wrapper">
-                    <button className="notificationBtn" id="notificationBtn1" data-bs-toggle="dropdown" aria-expanded="false" title={'Thông báo'}><i style={{fontSize : '20px'}} className='bx bxs-bell'></i>
+                    <button className="notificationBtn" id="notificationBtn1" data-bs-toggle="dropdown" aria-expanded="false" title={'Thông báo'}><i style={{fontSize : '20px', color : '#FFA500'}} className='bx bxs-bell'></i>
                     </button>
                     {/*<span className={'notification-wrapper-total'} style={alerts.length > 0 ? {display :'block'} : {display :'none'}}> {alerts.length}</span>*/}
                     <ul style={{width :'520px', maxHeight : '270px', overflowY : 'scroll'}} className="dropdown-menu" aria-labelledby="notificationBtn1">
@@ -78,7 +78,9 @@ function Navbar() {
                     </ul>
                 </div>
                 <div className="notification-wrapper">
-                    <button title={'Tin nhắn'} className="messageBtn"><i style={{fontSize : '20px'}} className='bx bxl-messenger'></i>
+                    <button title={'Tin nhắn'} className="messageBtn">
+                        
+                        <i style={{fontSize : '20px', color : '#87CEEB'}} className='bx bxl-messenger'></i>
                     </button>
                     {/*<span className={'notification-wrapper-total'}>10</span>*/}
                 </div>

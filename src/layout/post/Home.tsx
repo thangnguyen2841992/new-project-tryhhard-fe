@@ -12,6 +12,7 @@ import {Client} from "@stomp/stompjs";
 import SockJS from 'sockjs-client';
 import Post from "../../model/Post";
 import CalculateTime from "./CalculateTime";
+import { getAllPostOfUser } from "../../api/post-api";
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -54,7 +55,7 @@ function Home() {
             onConnect: () => {
                 stompClient.subscribe('/topic/posts', (message) => {
                     const post = JSON.parse(message.body);
-                        setPosts((prev) => [...prev, post]);
+                    setPosts((prev) => [post, ...prev]); // Thêm post vào đầu mảng
                 });
             },
             webSocketFactory: () => {
@@ -84,6 +85,10 @@ function Home() {
                 setTopics(data);
             }).catch(error => console.log(error));
 
+        getAllPostOfUser().then(
+            data => {
+                setPosts(data);
+            }).catch(error => console.log(error));
     }, []);
     const handleShowModalCreatePost = (e: any) => {
         e.preventDefault();
@@ -110,7 +115,7 @@ function Home() {
                 position: 'fixed',
                 top: '0',
                 left: '0',
-                backgroundColor: '#F2A3B5'
+                backgroundColor: '#F2A3B5',
             }}>
                 <div className="home-content-left-user"
                      style={{marginLeft: '5px', marginBottom: '10px', marginTop: '10px'}}>
@@ -118,7 +123,7 @@ function Home() {
                          style={{width: '150px', height: "100px", objectFit: 'cover', marginRight: '10px'}}/>
                 </div>
                 <Link to={'/friends'} style={{textDecoration: 'none'}}>
-                    <div className="home-content-left-item d-flex align-items-center">
+                    <div className="home-content-left-item d-flex align-items-center" title={'Bạn bè'}>
                         <div className={'home-content-left-item-icon'}>
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                                  fill="#fff">
@@ -130,7 +135,7 @@ function Home() {
                     </div>
                 </Link>
 
-                <div className="home-content-left-item d-flex align-items-center">
+                <div className="home-content-left-item d-flex align-items-center" title={'Dịch'}>
                     <div className={'home-content-left-item-icon'}>
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                              fill="#fff">
@@ -141,7 +146,7 @@ function Home() {
 
                     <span style={{color: 'white'}}>Dịch</span>
                 </div>
-                <div className="home-content-left-item d-flex align-items-center">
+                <div className="home-content-left-item d-flex align-items-center"  title={'Tra cứu'}>
                     <div className={'home-content-left-item-icon'}>
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                              fill="#fff">
@@ -221,11 +226,11 @@ function Home() {
                     <span style={{color: 'white'}}>Đọc hiểu</span>
                 </div>
             </div>
-            <div className="home-content-center" style={{width: '60%', marginTop: '90px', marginLeft: '20%'}}>
-                <div className="form-create-post-wrapper" style={{marginBottom : '20px'}}>
+
+            <div className="home-content-center" style={{width: '60%', marginTop: '90px', marginLeft: '20%', marginRight : '5%'}}>
+                <div className="form-create-post-wrapper" style={{marginBottom : '20px', width : '100%'}}>
                     <div className="create-post-top">
-                        {/*<div className="create-post-avatar"><img src={avatar.imageData} alt="avatar"/></div>*/}
-                        <div className="create-post-input"><input style={{paddingLeft: '50px'}}
+                        <div className="create-post-input"><input style={{paddingLeft: '50px', width : '100%'}}
                                                                   disabled={isDisable}
                                                                   onClick={handleShowModalCreatePost}
                                                                   type="text"
@@ -338,7 +343,6 @@ function Home() {
             <div className="home-content-right"
                  style={{width: '20%', marginTop: '90px', marginRight: '5%'}}>
                 <div className="search-wrapper" style={{
-                    // marginLeft: '35px',
                     position: 'relative',
                 }}>
                     <form onSubmit={handleSearch}>
