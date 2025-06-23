@@ -18,13 +18,13 @@ import ShowImageModal from "./ShowImageModal";
 function Home() {
     const [postId, setPostId] = useState(0);
     const [isShowImages, setIsShowImages] = useState(false);
-    const [image, setImage] = useState<Image>({});
     const [isReloadImgs, setIsReloadImgs] = useState<number>(0);
     const [user, setUser] = useState<Account>({});
     const [isDisable, setIsDisable] = useState(false);
     const [showModalCreatePost, setShowModalCreatePost] = useState<boolean>(false);
     const [showModalImagePost, setShowModalImagePost] = useState<boolean>(false);
     const [resetProp, setResetProp] = useState(false);
+    const [resetPropImage, setResetPropImage] = useState(false);
     const [actionCount, setActionCount] = useState(0);
     const navigate = useNavigate();
     // const [friends, setFriends] = useState<User[]>([]);
@@ -99,9 +99,10 @@ function Home() {
         setResetProp(false);
     }
 
-    const handleShowModalImagePost = (e: any) => {
-        e.preventDefault();
+    const handleShowModalImagePost = (postId:number) => {
         setShowModalImagePost(true);
+        setResetPropImage(false);
+        setPostId(postId);
     }
 
     const handleCloseModalCreatePost = () => {
@@ -109,10 +110,16 @@ function Home() {
         setIsDisable(false);
         setResetProp(true);
     }
+    const handleCloseModalImagePost = () => {
+        setShowModalImagePost(false);
+        setResetPropImage(true);
+    }
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
     }
+    // @ts-ignore
+    // @ts-ignore
     // @ts-ignore
     return (<div>
         <Navbar/>
@@ -154,7 +161,7 @@ function Home() {
 
                     <span style={{color: 'white'}}>Dịch</span>
                 </div>
-                <div className="home-content-left-item d-flex align-items-center"  title={'Tra cứu'}>
+                <div className="home-content-left-item d-flex align-items-center" title={'Tra cứu'}>
                     <div className={'home-content-left-item-icon'}>
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                              fill="#fff">
@@ -235,10 +242,11 @@ function Home() {
                 </div>
             </div>
 
-            <div className="home-content-center" style={{width: '50%', marginTop: '90px', marginLeft: '20%', marginRight : '5%'}}>
-                <div className="form-create-post-wrapper" style={{marginBottom : '20px', width : '100%'}}>
+            <div className="home-content-center"
+                 style={{width: '50%', marginTop: '90px', marginLeft: '20%', marginRight: '5%'}}>
+                <div className="form-create-post-wrapper" style={{marginBottom: '20px', width: '100%'}}>
                     <div className="create-post-top">
-                        <div className="create-post-input"><input style={{paddingLeft: '50px', width : '100%'}}
+                        <div className="create-post-input"><input style={{paddingLeft: '50px', width: '100%'}}
                                                                   disabled={isDisable}
                                                                   onClick={handleShowModalCreatePost}
                                                                   type="text"
@@ -253,128 +261,144 @@ function Home() {
                 </div>
                 {
                     posts.map((post) => (
-                        <div key={post.postId} className="post-detail-wrapper"
-                             style={{
-                                 padding: "20px",
-                                 background: "#f2f2f2",
-                                 borderRadius: "10px",
-                                 marginBottom: '20px'
-                             }}>
-                            <div className="post-detail-title" style={{marginBottom: '10px', display : 'flex', justifyContent : 'space-between'}}>
-                                <h3>{post.title}</h3>
-                                <button style={post.accountId === getUserToken().accountId ? {display : 'block'} : {display : 'none'}} className={'button-edit-post'} title={"Chỉnh sửa"}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960"
-                                         width="24px" fill="#000">
-                                        <path
-                                            d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/>
-                                    </svg>
-                                </button>
+                            <div key={post.postId} className="post-detail-wrapper"
+                                 style={{
+                                     padding: "20px",
+                                     background: "#f2f2f2",
+                                     borderRadius: "10px",
+                                     marginBottom: '20px'
+                                 }}>
+                                <div className="post-detail-title"
+                                     style={{marginBottom: '10px', display: 'flex', justifyContent: 'space-between'}}>
+                                    <h3>{post.title}</h3>
+                                    <button
+                                        style={post.accountId === getUserToken().accountId ? {display: 'block'} : {display: 'none'}}
+                                        className={'button-edit-post'} title={"Chỉnh sửa"}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960"
+                                             width="24px" fill="#000">
+                                            <path
+                                                d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/>
+                                        </svg>
+                                    </button>
 
-                            </div>
-                            <div className="post-detail-acc" style={{display: 'flex'}}>
-                                <div className="post-detail-acc-left">
-                                    <img src={post.avatar} alt="avatar"
-                                         style={{
-                                             width: '50px',
-                                             height: "50px",
-                                             objectFit: 'cover',
-                                             marginRight: '10px',
-                                             borderRadius: '50%'
-                                         }}/>
                                 </div>
-                                <div className="post-detail-acc-right">
-                                    <p>{post.fullName}</p>
-                                    <div style={{display : 'flex', alignItems : 'center', marginTop : '-7%'}}>
-                                        <p style={{color : '#7a809b', fontSize : '14px'}}>{post.statusPostName + " .  "}</p>
-                                        {/*// @ts-ignore*/}
-                                        <CalculateTime dateCreated = {post.dateCreated} />
+                                <div className="post-detail-acc" style={{display: 'flex'}}>
+                                    <div className="post-detail-acc-left">
+                                        <img src={post.avatar} alt="avatar"
+                                             style={{
+                                                 width: '50px',
+                                                 height: "50px",
+                                                 objectFit: 'cover',
+                                                 marginRight: '10px',
+                                                 borderRadius: '50%'
+                                             }}/>
                                     </div>
+                                    <div className="post-detail-acc-right">
+                                        <p>{post.fullName}</p>
+                                        <div style={{display: 'flex', alignItems: 'center', marginTop: '-7%'}}>
+                                            <p style={{
+                                                color: '#7a809b',
+                                                fontSize: '14px'
+                                            }}>{post.statusPostName + " .  "}</p>
+                                            {/*// @ts-ignore*/}
+                                            <CalculateTime dateCreated={post.dateCreated}/>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div style={{
+                                    borderLeft: '2px solid #b1b6c9',
+                                    padding: ' 0 10px',
+                                    marginBottom: '5px',
+                                    color: '#7a809b'
+                                }} className="post-detail-topicName">
+                                    {post.topicPostName}
+                                </div>
+                                <div className="post-detail-content"
+                                     style={{fontSize: '16px', marginBottom: '10px'}}>
+                                    {post.content}
+                                </div>
+                                <div  onClick={() => post?.postId !== undefined && handleShowModalImagePost(post.postId)}
+                                     style={(post.imageList == null || post.imageList.length === 0) ? {display: 'none'} : {display: 'block'}}
+                                     className="show-image-post-modal">
+                                    Hiển thị ảnh
+                                </div>
+
+                                {/*<div className="post-detail-image-wrapper" style={{marginBottom: '5px'}}>*/}
+                                {/*    <Images post={post} postId={postId} setPostId={setPostId}*/}
+                                {/*            isShowImages={isShowImages} setIsShowImages={setIsShowImages}*/}
+                                {/*            image={image} setImage={setImage}*/}
+                                {/*            isReload={isReloadImgs}/>*/}
+                                {/*</div>*/}
+                                {/*<div style={{display: 'flex', justifyContent: 'space-between'}}>*/}
+                                {/*    <div>*/}
+                                {/*        <TotalLikePost postId={post.postId ? post.postId : 0}*/}
+                                {/*                       resetTotalLike={resetTotalLike} resetComment={resetComment}*/}
+                                {/*                       showComments={showComments} setShowComments={setShowComments}/>*/}
+                                {/*    </div>*/}
+                                {/*    <div style={{cursor: "pointer"}}*/}
+                                {/*         onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}>*/}
+                                {/*        <TotalCommentOfPost postId={post.postId ? post.postId : 0}*/}
+                                {/*                            resetComment={resetComment}/>*/}
+                                {/*    </div>*/}
+
+                                {/*</div>*/}
+
+
+                                <div className="post-detail-like-wrapper" style={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    padding: '5px',
+                                }}>
+                                    {/*<div style={{paddingRight: '5px', width: '50%'}}>*/}
+                                    {/*    <ButtonListPost post={post} resetTotalLike={resetTotalLike}*/}
+                                    {/*                    setResetTotalLike={setResetTotalLike}/>*/}
+
+                                    {/*</div>*/}
+                                    {/*<div style={{paddingLeft: '5px', width: '50%'}}>*/}
+                                    {/*    <button*/}
+                                    {/*        onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}*/}
+                                    {/*        style={{width: '100%', border: '1px solid #e5e5e5'}}*/}
+                                    {/*        className="postDetailDisLikeBtn btn btn-light"><span><i*/}
+                                    {/*        className='bx bx-message-rounded-dots'></i></span> <span>Bình luận</span>*/}
+                                    {/*    </button>*/}
+                                    {/*</div>*/}
+
 
                                 </div>
+                                {/*{commentForms[post.postId ? post.postId : 0] && (*/}
+                                {/*    <ListComment postId={post.postId ? post.postId : 0} imageId={0}*/}
+                                {/*                 resetComment={resetComment}/>*/}
+
+
+                                {/*)}*/}
+                                {/*{commentForms[post.postId ? post.postId : 0] && (*/}
+
+                                {/*    <CommentForm postId={post.postId ? post.postId : 0} imageId={0}*/}
+                                {/*                 resetComment={resetComment} setResetComment={setResetComment}/>*/}
+
+                                {/*)}*/}
+                                {/*// @ts-ignore*/}
+                                <ShowImageModal
+                                    show={showModalImagePost}
+                                    postId={postId}
+                                    onHide={handleCloseModalImagePost}
+                                    resetProp={resetPropImage}/>
                             </div>
-                            <div style={{borderLeft : '2px solid #b1b6c9', padding: ' 0 10px', marginBottom: '5px', color : '#7a809b'}} className="post-detail-topicName">
-                                {post.topicPostName}
-                            </div>
-                            <div className="post-detail-content"
-                                 style={{fontSize: '16px', marginBottom: '10px'}}>
-                                {post.content}
-                            </div>
 
-                            <div onClick={handleShowModalImagePost} style={ (post.imageList == null || post.imageList.length === 0 ) ? {display: 'none'} : {display: 'block'}} className="show-image-post-modal">
-                                Hiển thị ảnh
-                            </div>
-
-                            {/*<div className="post-detail-image-wrapper" style={{marginBottom: '5px'}}>*/}
-                            {/*    <Images post={post} postId={postId} setPostId={setPostId}*/}
-                            {/*            isShowImages={isShowImages} setIsShowImages={setIsShowImages}*/}
-                            {/*            image={image} setImage={setImage}*/}
-                            {/*            isReload={isReloadImgs}/>*/}
-                            {/*</div>*/}
-                            {/*<div style={{display: 'flex', justifyContent: 'space-between'}}>*/}
-                            {/*    <div>*/}
-                            {/*        <TotalLikePost postId={post.postId ? post.postId : 0}*/}
-                            {/*                       resetTotalLike={resetTotalLike} resetComment={resetComment}*/}
-                            {/*                       showComments={showComments} setShowComments={setShowComments}/>*/}
-                            {/*    </div>*/}
-                            {/*    <div style={{cursor: "pointer"}}*/}
-                            {/*         onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}>*/}
-                            {/*        <TotalCommentOfPost postId={post.postId ? post.postId : 0}*/}
-                            {/*                            resetComment={resetComment}/>*/}
-                            {/*    </div>*/}
-
-                            {/*</div>*/}
-
-
-                            <div className="post-detail-like-wrapper" style={{
-                                width: '100%',
-                                display: 'flex',
-                                padding: '5px',
-                            }}>
-                                {/*<div style={{paddingRight: '5px', width: '50%'}}>*/}
-                                {/*    <ButtonListPost post={post} resetTotalLike={resetTotalLike}*/}
-                                {/*                    setResetTotalLike={setResetTotalLike}/>*/}
-
-                                {/*</div>*/}
-                                {/*<div style={{paddingLeft: '5px', width: '50%'}}>*/}
-                                {/*    <button*/}
-                                {/*        onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}*/}
-                                {/*        style={{width: '100%', border: '1px solid #e5e5e5'}}*/}
-                                {/*        className="postDetailDisLikeBtn btn btn-light"><span><i*/}
-                                {/*        className='bx bx-message-rounded-dots'></i></span> <span>Bình luận</span>*/}
-                                {/*    </button>*/}
-                                {/*</div>*/}
-
-
-                            </div>
-                            {/*{commentForms[post.postId ? post.postId : 0] && (*/}
-                            {/*    <ListComment postId={post.postId ? post.postId : 0} imageId={0}*/}
-                            {/*                 resetComment={resetComment}/>*/}
-
-
-                            {/*)}*/}
-                            {/*{commentForms[post.postId ? post.postId : 0] && (*/}
-
-                            {/*    <CommentForm postId={post.postId ? post.postId : 0} imageId={0}*/}
-                            {/*                 resetComment={resetComment} setResetComment={setResetComment}/>*/}
-
-                            {/*)}*/}
-                            {/*// @ts-ignore*/}
-                            <ShowImageModal
-                                show={showModalImagePost}
-                                images={post.imageList}
-                            />
-                        </div>
-
+                        )
                     )
-                    )
+
                 }
 
 
             </div>
             <div className="home-content-right"
-                 style={{width: '20%', marginTop: '90px', marginRight: '5%', position: 'fixed',
+                 style={{
+                     width: '20%', marginTop: '90px', marginRight: '5%', position: 'fixed',
                      top: '2%',
-                     right: '0'}}>
+                     right: '0'
+                 }}>
                 <div className="search-wrapper" style={{
                     position: 'relative',
                 }}>
@@ -413,6 +437,7 @@ function Home() {
         {/*    setImage={setImage}*/}
         {/*    show={isShowImages}*/}
         {/*    setIsShowImages={setIsShowImages}/>*/}
+
         <ModalCreatePost
             topics={topics}
             selectedTopicValue={selectedTopicValue}
@@ -427,6 +452,8 @@ function Home() {
             setSelectedTopicValue={setSelectedTopicValue}
             client={client}
         />
+
+
 
     </div>)
 }

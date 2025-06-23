@@ -389,9 +389,17 @@
 }
 .post-detail-image-item-one {
   width: 100%;
-  height: 500px;
-  padding: 2px;
+  height: 600px;
+  padding: 10px 50px;
   cursor: pointer;
+  position: relative;
+}
+.post-detail-image-item-one button {
+  transition: 0.5s;
+}
+.post-detail-image-item-one button:hover {
+  background: #606060;
+  color: white;
 }
 .post-detail-image-item-three, .post-detail-image-item-three-top {
   width: 33.3%;

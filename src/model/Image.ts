@@ -1,22 +1,18 @@
-
 class Image {
     imageId ?: number;
     imageData ?: string;
+    postId ?: number;
+    dateCreated ?: Date;
     description ?: string;
-    dateCreated ?: string;
-    commentId ?: number;
-    replyId?: number;
-    userId?: number;
 
 
-    constructor(imageId: number, imageData: string, description: string, dateCreated: string, commentId: number, replyId: number, userId: number) {
+    constructor(imageId: number, imageData: string, postId: number, dateCreated: Date, description: string) {
         this.imageId = imageId;
         this.imageData = imageData;
-        this.description = description;
+        this.postId = postId;
         this.dateCreated = dateCreated;
-        this.commentId = commentId;
-        this.replyId = replyId;
-        this.userId = userId;
+        this.description = description;
     }
 }
+
 export default Image
