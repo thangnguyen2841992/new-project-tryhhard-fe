@@ -12,7 +12,8 @@ import {Client} from "@stomp/stompjs";
 import SockJS from 'sockjs-client';
 import Post from "../../model/Post";
 import CalculateTime from "./CalculateTime";
-import { getAllPostOfUser } from "../../api/post-api";
+import {getAllPostOfOtherUser, getAllPostOfUser} from "../../api/post-api";
+import ShowImageModal from "./ShowImageModal";
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -22,6 +23,7 @@ function Home() {
     const [user, setUser] = useState<Account>({});
     const [isDisable, setIsDisable] = useState(false);
     const [showModalCreatePost, setShowModalCreatePost] = useState<boolean>(false);
+    const [showModalImagePost, setShowModalImagePost] = useState<boolean>(false);
     const [resetProp, setResetProp] = useState(false);
     const [actionCount, setActionCount] = useState(0);
     const navigate = useNavigate();
@@ -44,7 +46,7 @@ function Home() {
 
     useEffect(() => {
         const stompClient = new Client({
-            brokerURL: 'ws://localhost:8080/ws',
+            brokerURL: 'ws://localhost:8082/ws',
             connectHeaders: {
                 login: 'guest',
                 passcode: 'guest',
@@ -85,7 +87,7 @@ function Home() {
                 setTopics(data);
             }).catch(error => console.log(error));
 
-        getAllPostOfUser().then(
+        getAllPostOfOtherUser().then(
             data => {
                 setPosts(data);
             }).catch(error => console.log(error));
@@ -97,6 +99,11 @@ function Home() {
         setResetProp(false);
     }
 
+    const handleShowModalImagePost = (e: any) => {
+        e.preventDefault();
+        setShowModalImagePost(true);
+    }
+
     const handleCloseModalCreatePost = () => {
         setShowModalCreatePost(false);
         setIsDisable(false);
@@ -106,6 +113,7 @@ function Home() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
     }
+    // @ts-ignore
     return (<div>
         <Navbar/>
         <div className="home-content" style={{width: '99vw', height: '100vh', display: 'flex', padding: '15px 5px'}}>
@@ -227,7 +235,7 @@ function Home() {
                 </div>
             </div>
 
-            <div className="home-content-center" style={{width: '60%', marginTop: '90px', marginLeft: '20%', marginRight : '5%'}}>
+            <div className="home-content-center" style={{width: '50%', marginTop: '90px', marginLeft: '20%', marginRight : '5%'}}>
                 <div className="form-create-post-wrapper" style={{marginBottom : '20px', width : '100%'}}>
                     <div className="create-post-top">
                         <div className="create-post-input"><input style={{paddingLeft: '50px', width : '100%'}}
@@ -252,10 +260,18 @@ function Home() {
                                  borderRadius: "10px",
                                  marginBottom: '20px'
                              }}>
-                            <div className="post-detail-title" style={{marginBottom: '20px'}}>
+                            <div className="post-detail-title" style={{marginBottom: '10px', display : 'flex', justifyContent : 'space-between'}}>
                                 <h3>{post.title}</h3>
+                                <button style={post.accountId === getUserToken().accountId ? {display : 'block'} : {display : 'none'}} className={'button-edit-post'} title={"Chỉnh sửa"}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960"
+                                         width="24px" fill="#000">
+                                        <path
+                                            d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/>
+                                    </svg>
+                                </button>
+
                             </div>
-                            <div className="post-detail-acc" style={{display : 'flex'}}>
+                            <div className="post-detail-acc" style={{display: 'flex'}}>
                                 <div className="post-detail-acc-left">
                                     <img src={post.avatar} alt="avatar"
                                          style={{
@@ -268,16 +284,24 @@ function Home() {
                                 </div>
                                 <div className="post-detail-acc-right">
                                     <p>{post.fullName}</p>
-                                    {/*// @ts-ignore*/}
-                                    <CalculateTime dateCreated = {post.dateCreated} />
+                                    <div style={{display : 'flex', alignItems : 'center', marginTop : '-7%'}}>
+                                        <p style={{color : '#7a809b', fontSize : '14px'}}>{post.statusPostName + " .  "}</p>
+                                        {/*// @ts-ignore*/}
+                                        <CalculateTime dateCreated = {post.dateCreated} />
+                                    </div>
+
                                 </div>
                             </div>
-                            <div style={{borderLeft : '2px solid #b1b6c9', padding: ' 0 10px', marginBottom: '10px', color : '#7a809b'}} className="post-detail-topicName">
+                            <div style={{borderLeft : '2px solid #b1b6c9', padding: ' 0 10px', marginBottom: '5px', color : '#7a809b'}} className="post-detail-topicName">
                                 {post.topicPostName}
                             </div>
                             <div className="post-detail-content"
-                                 style={{fontSize: '18px', marginBottom: '20px'}}>
+                                 style={{fontSize: '16px', marginBottom: '10px'}}>
                                 {post.content}
+                            </div>
+
+                            <div onClick={handleShowModalImagePost} style={ (post.imageList == null || post.imageList.length === 0 ) ? {display: 'none'} : {display: 'block'}} className="show-image-post-modal">
+                                Hiển thị ảnh
                             </div>
 
                             {/*<div className="post-detail-image-wrapper" style={{marginBottom: '5px'}}>*/}
@@ -334,14 +358,23 @@ function Home() {
                             {/*                 resetComment={resetComment} setResetComment={setResetComment}/>*/}
 
                             {/*)}*/}
+                            {/*// @ts-ignore*/}
+                            <ShowImageModal
+                                show={showModalImagePost}
+                                images={post.imageList}
+                            />
                         </div>
-                    ))
+
+                    )
+                    )
                 }
 
 
             </div>
             <div className="home-content-right"
-                 style={{width: '20%', marginTop: '90px', marginRight: '5%'}}>
+                 style={{width: '20%', marginTop: '90px', marginRight: '5%', position: 'fixed',
+                     top: '2%',
+                     right: '0'}}>
                 <div className="search-wrapper" style={{
                     position: 'relative',
                 }}>
@@ -394,6 +427,7 @@ function Home() {
             setSelectedTopicValue={setSelectedTopicValue}
             client={client}
         />
+
     </div>)
 }
 

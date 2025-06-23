@@ -724,3 +724,26 @@ input[type="text"]:focus {
   color: #888; /* Màu sắc mũi tên */
 }
 
+.show-image-post-modal {
+  color : #3e67d6;
+  cursor: pointer;
+  margin-top: -10px;
+}
+.show-image-post-modal:hover {
+  color : #3252ab;
+  text-decoration: underline;
+}
+.button-edit-post {
+  border: none;
+  outline: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  transition: 0.5s;
+}
+.button-edit-post:hover {
+  background: #888888;
+}
+
+
+

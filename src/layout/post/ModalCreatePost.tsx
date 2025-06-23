@@ -14,6 +14,7 @@ function ModalCreatePost(props: any) {
     const [isUploadProcessing, setIsUploadProcessing] = useState(false);
     const [contentText, setContentText] = useState('');
     const [status, setStatus] = useState(1);
+    const [statusName, setStatusName] = useState("Công Khai");
     const [topicName, setTopicName] = useState('');
     const [imageListData, setImageListData] = useState<Image[]>([]);
 
@@ -65,6 +66,11 @@ function ModalCreatePost(props: any) {
 
     const handleStatusChange = (e: ChangeEvent<HTMLInputElement>) => {
         setStatus(parseInt(e.target.value + ''));
+        if (status == 2) {
+            setStatusName('Chỉ Bạn Bè');
+        } else if (status ==3){
+            setStatusName('Chỉ Mình Tôi') ;
+        }
     }
     const handleShowStatus = (e: React.FormEvent) => {
         e.preventDefault();
@@ -121,6 +127,7 @@ function ModalCreatePost(props: any) {
                 content: contentText,
                 title: title,
                 statusId: status,
+                statusPostName: statusName,
                 accountId: getUserToken().accountId,
                 fullName: getUserToken().fullName,
                 avatar: getUserToken().avatar,
@@ -133,6 +140,7 @@ function ModalCreatePost(props: any) {
                 destination: '/app/message',
                 body: messageSend
             });
+            props.setShowModalCreatePost(false)
         }
     };
 
