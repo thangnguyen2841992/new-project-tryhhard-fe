@@ -80,7 +80,7 @@ const Navbar: React.FC<NavbarProps> = ({ notifications }) => {
                 <div className="notification-wrapper">
                     <button className="notificationBtn" id="notificationBtn1" data-bs-toggle="dropdown" aria-expanded="false" title={'Thông báo'}><i style={{fontSize : '20px', color : '#FFA500'}} className='bx bxs-bell'></i>
                     </button>
-                    <span className={'notification-wrapper-total'} style={notifications.length > 0 ? {display :'block'} : {display :'none'}}> {notifications.length}</span>
+                    <span className={'notification-wrapper-total'} style={notifications.length > 0 ? {display :'flex',alignItems:'center', justifyContent:'center', backgroundColor:'red', color: '#fff', width: '25px', height: '25px', borderRadius: '11px', fontSize:'20px'} : {display :'none'}}> {notifications.length}</span>
                     <ul style={{width :'520px', maxHeight : '270px', overflowY : 'scroll', padding : '10px'}} className="dropdown-menu" aria-labelledby="notificationBtn1">
                         <strong style={{marginLeft :'10px', marginBottom : '10px'}}>Thông báo({notifications.length})</strong>
                         {

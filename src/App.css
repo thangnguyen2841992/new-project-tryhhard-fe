@@ -34,11 +34,9 @@
 }
 
 .notification-wrapper-total {
-  color: red;
   position: absolute;
   top: -10px;
-  left: 35px;
-  font-size: 22px;
+  left: 25px;
   font-weight: 600;
 }
 
