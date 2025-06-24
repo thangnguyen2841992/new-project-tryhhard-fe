@@ -135,12 +135,11 @@ function ModalCreatePost(props: any) {
                 topicPostName: topicName,
                 imageList: imageListData
             })
-
+            props.setShowModalCreatePost(false);
             props.client.publish({
                 destination: '/app/message',
                 body: messageSend
             });
-            props.setShowModalCreatePost(false)
         }
     };
 

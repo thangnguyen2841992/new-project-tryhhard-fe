@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 import Image from "../../model/Image";
+import Notification from "../../model/Notification";
 import ModalCreatePost from "./ModalCreatePost";
 import Account from "../../model/Account";
 import {getAccountByAccountId} from "../../api/AccountApi";
@@ -12,8 +13,9 @@ import {Client} from "@stomp/stompjs";
 import SockJS from 'sockjs-client';
 import Post from "../../model/Post";
 import CalculateTime from "./CalculateTime";
-import {getAllPostOfOtherUser, getAllPostOfUser} from "../../api/post-api";
+import {getAllPostOfOtherUser} from "../../api/post-api";
 import ShowImageModal from "./ShowImageModal";
+import {getAllNotificationUnreadOfUser} from "../../api/Notification-api";
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -43,6 +45,7 @@ function Home() {
     const [messages, setMessages] = useState<string[]>([]);
     const [client, setClient] = useState<Client | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
     useEffect(() => {
         const stompClient = new Client({
@@ -58,6 +61,17 @@ function Home() {
                 stompClient.subscribe('/topic/posts', (message) => {
                     const post = JSON.parse(message.body);
                     setPosts((prev) => [post, ...prev]); // Thêm post vào đầu mảng
+                });
+                stompClient.subscribe('/topic/likePost', (message) => {
+                    const likePost = JSON.parse(message.body);
+                    updateTotalLikes(likePost.postId, likePost.totalLikes);
+                });
+                stompClient.subscribe('/topic/notification', (message) => {
+                    const notification = JSON.parse(message.body);
+                    if (notification.toAccountId === getUserToken().accountId) {
+                        setNotifications((prev) => [notification, ...prev]);
+                    }
+                    console.log(notifications.length);// Thêm post vào đầu mảng
                 });
             },
             webSocketFactory: () => {
@@ -91,6 +105,11 @@ function Home() {
             data => {
                 setPosts(data);
             }).catch(error => console.log(error));
+
+        getAllNotificationUnreadOfUser().then(
+            data => {
+                setNotifications(data);
+            }).catch(error => console.log(error));
     }, []);
     const handleShowModalCreatePost = (e: any) => {
         e.preventDefault();
@@ -118,11 +137,30 @@ function Home() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
     }
-    // @ts-ignore
-    // @ts-ignore
-    // @ts-ignore
+    const updateTotalLikes = (postId: number, newTotalLikes: number) => {
+        setPosts((prevPosts) =>
+            prevPosts.map((post) =>
+                post.postId === postId ? { ...post, totalLikes: newTotalLikes } : post
+            )
+        );
+    };
+    const handleCreateLikePost = (postId : number) => {
+        if (client) {
+            let messageLikePostSend = JSON.stringify({
+                postId : postId,
+                accountId : getUserToken().accountId,
+            })
+
+            client.publish({
+                destination: '/app/likePost',
+                body: messageLikePostSend
+            });
+        }
+
+    }
     return (<div>
-        <Navbar/>
+        {/*// @ts-ignore*/}
+        <Navbar notifications={notifications}/>
         <div className="home-content" style={{width: '99vw', height: '100vh', display: 'flex', padding: '15px 5px'}}>
             <div className="home-content-left" style={{
                 width: '15%',
@@ -263,7 +301,7 @@ function Home() {
                     posts.map((post) => (
                             <div key={post.postId} className="post-detail-wrapper"
                                  style={{
-                                     padding: "20px",
+                                     padding: "10px",
                                      background: "#f2f2f2",
                                      borderRadius: "10px",
                                      marginBottom: '20px'
@@ -323,62 +361,33 @@ function Home() {
                                      className="show-image-post-modal">
                                     Hiển thị ảnh
                                 </div>
+                                <div className="like-comment-post-area" style={{padding : '10px 0', borderTop : '1px solid #7a809b', display : 'flex', justifyContent : 'space-between', alignItems : 'center' }}>
+                                    <div className="like-comment-post-area-left" style={{display : 'flex'}}>
+                                        <div className="like-comment-post-area-left-like" style={{display : 'flex', alignItems : 'center', justifyContent : 'center', marginRight : '20px'}}>
+                                            <svg  xmlns="http://www.w3.org/2000/svg" height="24px"
+                                                 viewBox="0 -960 960 960"
+                                                 width="24px"  fill={post.totalLikes === 0 ? '#7a809b' : 'red'}>
+                                                <path
+                                                    d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z"/>
+                                            </svg>
+                                            <div onClick={() => post?.postId !== undefined && handleCreateLikePost(post.postId)}
+                                                style={{marginLeft : '5px', cursor : 'pointer', color : '#7a809b'}}>Yêu Thích ({post.totalLikes})</div>
+                                        </div>
 
-                                {/*<div className="post-detail-image-wrapper" style={{marginBottom: '5px'}}>*/}
-                                {/*    <Images post={post} postId={postId} setPostId={setPostId}*/}
-                                {/*            isShowImages={isShowImages} setIsShowImages={setIsShowImages}*/}
-                                {/*            image={image} setImage={setImage}*/}
-                                {/*            isReload={isReloadImgs}/>*/}
-                                {/*</div>*/}
-                                {/*<div style={{display: 'flex', justifyContent: 'space-between'}}>*/}
-                                {/*    <div>*/}
-                                {/*        <TotalLikePost postId={post.postId ? post.postId : 0}*/}
-                                {/*                       resetTotalLike={resetTotalLike} resetComment={resetComment}*/}
-                                {/*                       showComments={showComments} setShowComments={setShowComments}/>*/}
-                                {/*    </div>*/}
-                                {/*    <div style={{cursor: "pointer"}}*/}
-                                {/*         onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}>*/}
-                                {/*        <TotalCommentOfPost postId={post.postId ? post.postId : 0}*/}
-                                {/*                            resetComment={resetComment}/>*/}
-                                {/*    </div>*/}
+                                        <div className="like-comment-post-area-left-comment" style={{display : 'flex', alignItems : 'center', justifyContent : 'center'}}>
+                                            <svg  xmlns="http://www.w3.org/2000/svg" height="24px"
+                                                 viewBox="0 -960 960 960" width="24px" fill="#7a809b">
+                                                <path
+                                                    d="M80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/>
+                                            </svg>
+                                            <div style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Bình Luận
+                                            </div>
+                                        </div>
 
-                                {/*</div>*/}
-
-
-                                <div className="post-detail-like-wrapper" style={{
-                                    width: '100%',
-                                    display: 'flex',
-                                    padding: '5px',
-                                }}>
-                                    {/*<div style={{paddingRight: '5px', width: '50%'}}>*/}
-                                    {/*    <ButtonListPost post={post} resetTotalLike={resetTotalLike}*/}
-                                    {/*                    setResetTotalLike={setResetTotalLike}/>*/}
-
-                                    {/*</div>*/}
-                                    {/*<div style={{paddingLeft: '5px', width: '50%'}}>*/}
-                                    {/*    <button*/}
-                                    {/*        onClick={(e: React.FormEvent) => showComment(e, post.postId ? post.postId : 0)}*/}
-                                    {/*        style={{width: '100%', border: '1px solid #e5e5e5'}}*/}
-                                    {/*        className="postDetailDisLikeBtn btn btn-light"><span><i*/}
-                                    {/*        className='bx bx-message-rounded-dots'></i></span> <span>Bình luận</span>*/}
-                                    {/*    </button>*/}
-                                    {/*</div>*/}
-
-
+                                    </div>
                                 </div>
-                                {/*{commentForms[post.postId ? post.postId : 0] && (*/}
-                                {/*    <ListComment postId={post.postId ? post.postId : 0} imageId={0}*/}
-                                {/*                 resetComment={resetComment}/>*/}
 
 
-                                {/*)}*/}
-                                {/*{commentForms[post.postId ? post.postId : 0] && (*/}
-
-                                {/*    <CommentForm postId={post.postId ? post.postId : 0} imageId={0}*/}
-                                {/*                 resetComment={resetComment} setResetComment={setResetComment}/>*/}
-
-                                {/*)}*/}
-                                {/*// @ts-ignore*/}
                                 <ShowImageModal
                                     show={showModalImagePost}
                                     postId={postId}

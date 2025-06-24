@@ -4,8 +4,11 @@ import {Link,useNavigate} from "react-router-dom";
 import Account from "../../model/Account";
 import {getUserToken} from "../../api/PublicApi";
 
+interface NavbarProps {
+    notifications: NotificationAction[];
+}
 
-function Navbar() {
+const Navbar: React.FC<NavbarProps> = ({ notifications }) => {
     const [user, setUser] = useState<Account>({});
     const navigate = useNavigate();
     const [keyword, setKeyword] = useState('');
@@ -73,6 +76,7 @@ function Navbar() {
                     <button className="notificationBtn" id="notificationBtn1" data-bs-toggle="dropdown" aria-expanded="false" title={'Thông báo'}><i style={{fontSize : '20px', color : '#FFA500'}} className='bx bxs-bell'></i>
                     </button>
                     {/*<span className={'notification-wrapper-total'} style={alerts.length > 0 ? {display :'block'} : {display :'none'}}> {alerts.length}</span>*/}
+                    <span className={'notification-wrapper-total'} >{notifications.length}</span>
                     <ul style={{width :'520px', maxHeight : '270px', overflowY : 'scroll'}} className="dropdown-menu" aria-labelledby="notificationBtn1">
                         {/*<strong style={{marginLeft :'10px'}}>Thông báo({alerts.length})</strong>*/}
                     </ul>

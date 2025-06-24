@@ -20,6 +20,7 @@ export async function getAllPostOfUser(): Promise<Post[]> {
                 fullName: responseData[key].fullName,
                 avatar: responseData[key].avatar,
                 imageList: responseData[key].images,
+                totalLikes: responseData[key].totalLikes,
             }
         )
     }
@@ -46,6 +47,7 @@ export async function getAllPostOfOtherUser(): Promise<Post[]> {
                 fullName: responseData[key].fullName,
                 avatar: responseData[key].avatar,
                 imageList: responseData[key].images,
+                totalLikes: responseData[key].totalLikes,
             }
         )
     }

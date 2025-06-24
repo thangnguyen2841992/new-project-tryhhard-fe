@@ -1,3 +1,4 @@
+
 interface Image {
     imageList : Image[];
 }
@@ -15,9 +16,10 @@ class Post {
     statusPostId ?: number;
     statusPostName ?: string;
     imageList ?: Image[];
+    totalLikes ?: number
 
 
-    constructor(postId: number, accountId: number, fullName: string, avatar: string, title: string, content: string, dateCreated: Date, topicPostId: number, topicPostName: string, statusPostId: number, statusPostName: string, imageList: Image[]) {
+    constructor(postId: number, accountId: number, fullName: string, avatar: string, title: string, content: string, dateCreated: Date, topicPostId: number, topicPostName: string, statusPostId: number, statusPostName: string, imageList: Image[], totalLikes: number) {
         this.postId = postId;
         this.accountId = accountId;
         this.fullName = fullName;
@@ -30,6 +32,7 @@ class Post {
         this.statusPostId = statusPostId;
         this.statusPostName = statusPostName;
         this.imageList = imageList;
+        this.totalLikes = totalLikes;
     }
 }
 
