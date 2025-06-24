@@ -38,7 +38,7 @@ function ShowImageModal(props: any) {
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title-vcenter">
                         <strong className={'text-center'}
-                                style={{marginLeft: '150px'}}>Ảnh Bài Viết</strong>
+                                >Ảnh Bài Viết ({currentIndex + 1}/{imageList.length})</strong>
 
                     </Modal.Title>
                 </Modal.Header>
@@ -46,7 +46,7 @@ function ShowImageModal(props: any) {
                 <div>
                     <Modal.Body>
                         <div key={imageList[0].imageId} className="post-detail-image-item-one">
-                            <button title={'Previous'}
+                            <button title={'Previous'} hidden={imageList.length === 1 || currentIndex === 0}
                                 style={{
                                     position: 'absolute',
                                     top: '45%',
@@ -69,7 +69,7 @@ function ShowImageModal(props: any) {
 
                             </button>
                             <img style={{cursor: 'pointer'}} src={imageList[currentIndex].imageData} alt=""/>
-                            <button title={'Next'} style={{
+                            <button title={'Next'} hidden={imageList.length === 1 || currentIndex === imageList.length - 1} style={{
                                 position: 'absolute',
                                 top: '45%',
                                 right: '-5px',

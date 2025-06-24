@@ -3,6 +3,8 @@ import {getAccountByAccountId} from "../../api/AccountApi";
 import {Link,useNavigate} from "react-router-dom";
 import Account from "../../model/Account";
 import {getUserToken} from "../../api/PublicApi";
+import Notification from "../../model/Notification";
+import NotificationItem from "./NotificationItem";
 
 interface NavbarProps {
     notifications: Notification[];
@@ -78,10 +80,14 @@ const Navbar: React.FC<NavbarProps> = ({ notifications }) => {
                 <div className="notification-wrapper">
                     <button className="notificationBtn" id="notificationBtn1" data-bs-toggle="dropdown" aria-expanded="false" title={'Thông báo'}><i style={{fontSize : '20px', color : '#FFA500'}} className='bx bxs-bell'></i>
                     </button>
-                    {/*<span className={'notification-wrapper-total'} style={alerts.length > 0 ? {display :'block'} : {display :'none'}}> {alerts.length}</span>*/}
-                    <span className={'notification-wrapper-total'} >{notifications.length}</span>
-                    <ul style={{width :'520px', maxHeight : '270px', overflowY : 'scroll'}} className="dropdown-menu" aria-labelledby="notificationBtn1">
-                        {/*<strong style={{marginLeft :'10px'}}>Thông báo({alerts.length})</strong>*/}
+                    <span className={'notification-wrapper-total'} style={notifications.length > 0 ? {display :'block'} : {display :'none'}}> {notifications.length}</span>
+                    <ul style={{width :'520px', maxHeight : '270px', overflowY : 'scroll', padding : '10px'}} className="dropdown-menu" aria-labelledby="notificationBtn1">
+                        <strong style={{marginLeft :'10px', marginBottom : '10px'}}>Thông báo({notifications.length})</strong>
+                        {
+                            notifications.map((item) => (
+                                <NotificationItem notification={item} />
+                            ))
+                        }
                     </ul>
                 </div>
                 <div className="notification-wrapper">

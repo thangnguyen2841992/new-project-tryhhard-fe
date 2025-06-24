@@ -391,12 +391,6 @@ function About() {
                                     </div>
                                 </div>
 
-
-                                <ShowImageModal
-                                    show={showModalImagePost}
-                                    postId={postId}
-                                    onHide={handleCloseModalImagePost}
-                                    resetProp={resetPropImage}/>
                             </div>
 
                         )
@@ -465,8 +459,11 @@ function About() {
             setSelectedTopicValue={setSelectedTopicValue}
             client={client}
         />
-
-
+        <ShowImageModal
+            show={showModalImagePost}
+            postId={postId}
+            onHide={handleCloseModalImagePost}
+            resetProp={resetPropImage}/>
 
     </div>)
 }

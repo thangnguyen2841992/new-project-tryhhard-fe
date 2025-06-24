@@ -388,13 +388,6 @@ function Home() {
 
                                     </div>
                                 </div>
-
-
-                                <ShowImageModal
-                                    show={showModalImagePost}
-                                    postId={postId}
-                                    onHide={handleCloseModalImagePost}
-                                    resetProp={resetPropImage}/>
                             </div>
 
                         )
@@ -463,6 +456,11 @@ function Home() {
             setSelectedTopicValue={setSelectedTopicValue}
             client={client}
         />
+        <ShowImageModal
+            show={showModalImagePost}
+            postId={postId}
+            onHide={handleCloseModalImagePost}
+            resetProp={resetPropImage}/>
 
 
 

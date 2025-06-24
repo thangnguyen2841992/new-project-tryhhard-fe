@@ -752,6 +752,9 @@ input[type="text"]:focus {
 .button-edit-post:hover {
   background: #888888;
 }
+.notiftication-item:hover {
+  background: #e5e5e5;
+}
 
 
 
