@@ -44,9 +44,7 @@ const CalculateTime: React.FC<DateCreated> = ({ dateCreated }) => {
     }, [dateCreated]);
 
     return (
-        <div>
-            <p style={{color : '#7a809b', fontSize : '14px', marginLeft : '5px'}}>{timeDiff}</p>
-        </div>
+            <div style={{color : '#7a809b', fontSize : '14px'}}>{timeDiff}</div>
     );
 };
 export default CalculateTime;

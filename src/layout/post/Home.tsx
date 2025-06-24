@@ -322,7 +322,7 @@ function Home() {
                                     </button>
 
                                 </div>
-                                <div className="post-detail-acc" style={{display: 'flex'}}>
+                                <div className="post-detail-acc" style={{display: 'flex', marginBottom : '10px'}}>
                                     <div className="post-detail-acc-left">
                                         <img src={post.avatar} alt="avatar"
                                              style={{
@@ -336,10 +336,10 @@ function Home() {
                                     <div className="post-detail-acc-right">
                                         <p>{post.fullName}</p>
                                         <div style={{display: 'flex', alignItems: 'center', marginTop: '-7%'}}>
-                                            <p style={{
+                                            <div style={{
                                                 color: '#7a809b',
-                                                fontSize: '14px'
-                                            }}>{post.statusPostName + " .  "}</p>
+                                                fontSize: '14px', marginRight: '10px',
+                                            }}>{post.statusPostName + " .  "}</div>
                                             {/*// @ts-ignore*/}
                                             <CalculateTime dateCreated={post.dateCreated}/>
                                         </div>
