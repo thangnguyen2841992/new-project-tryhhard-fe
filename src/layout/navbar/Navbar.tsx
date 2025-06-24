@@ -5,7 +5,7 @@ import Account from "../../model/Account";
 import {getUserToken} from "../../api/PublicApi";
 
 interface NavbarProps {
-    notifications: NotificationAction[];
+    notifications: Notification[];
 }
 
 const Navbar: React.FC<NavbarProps> = ({ notifications }) => {
@@ -13,6 +13,9 @@ const Navbar: React.FC<NavbarProps> = ({ notifications }) => {
     const navigate = useNavigate();
     const [keyword, setKeyword] = useState('');
 
+    const handleNavigationAbout = () => {
+        navigate(`/about/${getUserToken().accountId}`); // Điều hướng đến trang người dùng
+    };
 
 
     const onChangeKeyword = (e : React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +97,7 @@ const Navbar: React.FC<NavbarProps> = ({ notifications }) => {
                             id="editPostDropdown"> <img className={'nav-avatar-wrapper-img'} src={user.avatar} alt="avatar"/></button>
 
                     <ul className="dropdown-menu" aria-labelledby="editPostDropdown">
-                        <li className={'friend-list-li'}><i className="fa-solid fa-user"></i> <span style={{marginLeft : '10px'}}>Xem tất cả trang cá nhân</span>
+                        <li onClick={handleNavigationAbout} className={'friend-list-li'}><i className="fa-solid fa-user"></i> <span style={{marginLeft : '10px'}}>Xem tất cả trang cá nhân</span>
                         </li>
                         <li onClick={logout} className={'friend-list-li'}><i className="fa-solid fa-right-from-bracket"></i><span style={{marginLeft : '10px'}}>Đăng xuất</span></li>
                     </ul>

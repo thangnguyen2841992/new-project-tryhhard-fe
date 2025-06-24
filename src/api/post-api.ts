@@ -1,8 +1,8 @@
 import Post from "../model/Post";
 import {getUserToken, myRequest} from "./PublicApi";
 
-export async function getAllPostOfUser(): Promise<Post[]> {
-    const url = `http://localhost:8082/post-api/getAllPostsOfUser/${getUserToken().accountId}`;
+export async function getAllPostOfUser(accountId : number): Promise<Post[]> {
+    const url = `http://localhost:8082/post-api/getAllPostsOfUser/${accountId}`;
     const responseData = await myRequest(url);
 
     let postList: Post[] = [];

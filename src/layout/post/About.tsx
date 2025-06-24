@@ -1,23 +1,23 @@
-import React, {useEffect, useState} from "react";
-import {Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getUserToken } from "../../api/PublicApi";
+import ShowImageModal from "./ShowImageModal";
+import { useEffect, useState } from "react";
+import { getAllTopicProduct } from "../../api/ProductApi";
+import {getAllPostOfUser} from "../../api/post-api";
+import { getAllNotificationUnreadOfUser } from "../../api/Notification-api";
+import { Client } from "@stomp/stompjs";
+import Account from "../../model/Account";
 import Image from "../../model/Image";
 import Notification from "../../model/Notification";
-import ModalCreatePost from "./ModalCreatePost";
-import Account from "../../model/Account";
-import {getAccountByAccountId} from "../../api/AccountApi";
-import {getUserToken} from "../../api/PublicApi";
-import Navbar from "../navbar/Navbar";
-import {getAllTopicProduct} from "../../api/ProductApi";
-import TopicProduct from "../../model/TopicProduct";
-import {Client} from "@stomp/stompjs";
-import SockJS from 'sockjs-client';
 import Post from "../../model/Post";
+import TopicProduct from "../../model/TopicProduct";
+import SockJS from 'sockjs-client';
+import ModalCreatePost from "./ModalCreatePost";
+import Navbar from "../navbar/Navbar";
 import CalculateTime from "./CalculateTime";
-import {getAllPostOfOtherUser} from "../../api/post-api";
-import ShowImageModal from "./ShowImageModal";
-import {getAllNotificationUnreadOfUser} from "../../api/Notification-api";
+import {getAccountByAccountId} from "../../api/AccountApi";
 
-function Home() {
+function About() {
     const [postId, setPostId] = useState(0);
     const [isShowImages, setIsShowImages] = useState(false);
     const [isReloadImgs, setIsReloadImgs] = useState<number>(0);
@@ -46,6 +46,7 @@ function Home() {
     const [client, setClient] = useState<Client | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
+    const {accountId} = useParams();
 
     useEffect(() => {
         const stompClient = new Client({
@@ -101,7 +102,8 @@ function Home() {
                 setTopics(data);
             }).catch(error => console.log(error));
 
-        getAllPostOfOtherUser().then(
+        // @ts-ignore
+        getAllPostOfUser(accountId).then(
             data => {
                 setPosts(data);
             }).catch(error => console.log(error));
@@ -288,9 +290,9 @@ function Home() {
                 <div className="form-create-post-wrapper" style={{marginBottom: '20px', width: '100%'}}>
                     <div className="create-post-top">
                         <div className="create-post-input" onClick={handleShowModalCreatePost}><input style={{paddingLeft: '50px', width: '100%'}}
-                                                                  disabled={isDisable}
-                                                                  type="text"
-                                                                  placeholder={user.fullName + ' bạn đang thắc mắc điều gì?'}/>
+                                                                                                      disabled={isDisable}
+                                                                                                      type="text"
+                                                                                                      placeholder={user.fullName + ' bạn đang thắc mắc điều gì?'}/>
                             <img src={user.avatar} alt="avatar" style={{
                                 width: '30px', height: '30px', borderRadius: '50%',
                                 position: "absolute", top: '10px', left: '10px'
@@ -359,26 +361,26 @@ function Home() {
                                     {post.content}
                                 </div>
                                 <div  onClick={() => post?.postId !== undefined && handleShowModalImagePost(post.postId)}
-                                     style={(post.imageList == null || post.imageList.length === 0) ? {display: 'none'} : {display: 'block'}}
-                                     className="show-image-post-modal">
+                                      style={(post.imageList == null || post.imageList.length === 0) ? {display: 'none'} : {display: 'block'}}
+                                      className="show-image-post-modal">
                                     Hiển thị ảnh
                                 </div>
                                 <div className="like-comment-post-area" style={{padding : '10px 0', borderTop : '1px solid #7a809b', display : 'flex', justifyContent : 'space-between', alignItems : 'center' }}>
                                     <div className="like-comment-post-area-left" style={{display : 'flex'}}>
                                         <div className="like-comment-post-area-left-like" style={{display : 'flex', alignItems : 'center', justifyContent : 'center', marginRight : '20px'}}>
                                             <svg  xmlns="http://www.w3.org/2000/svg" height="24px"
-                                                 viewBox="0 -960 960 960"
-                                                 width="24px"  fill={post.totalLikes === 0 ? '#7a809b' : 'red'}>
+                                                  viewBox="0 -960 960 960"
+                                                  width="24px"  fill={post.totalLikes === 0 ? '#7a809b' : 'red'}>
                                                 <path
                                                     d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z"/>
                                             </svg>
                                             <div onClick={() => post?.postId !== undefined && handleCreateLikePost(post.postId)}
-                                                style={{marginLeft : '5px', cursor : 'pointer', color : '#7a809b'}}>Yêu Thích ({post.totalLikes})</div>
+                                                 style={{marginLeft : '5px', cursor : 'pointer', color : '#7a809b'}}>Yêu Thích ({post.totalLikes})</div>
                                         </div>
 
                                         <div className="like-comment-post-area-left-comment" style={{display : 'flex', alignItems : 'center', justifyContent : 'center'}}>
                                             <svg  xmlns="http://www.w3.org/2000/svg" height="24px"
-                                                 viewBox="0 -960 960 960" width="24px" fill="#7a809b">
+                                                  viewBox="0 -960 960 960" width="24px" fill="#7a809b">
                                                 <path
                                                     d="M80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/>
                                             </svg>
@@ -468,5 +470,4 @@ function Home() {
 
     </div>)
 }
-
-export default Home
+export default About;
