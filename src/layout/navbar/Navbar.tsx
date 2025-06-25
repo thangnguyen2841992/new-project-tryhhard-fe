@@ -85,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ notifications }) => {
                         <strong style={{marginLeft :'10px', marginBottom : '10px'}}>Thông báo({notifications.length})</strong>
                         {
                             notifications.map((item) => (
-                                <NotificationItem notification={item} />
+                                <NotificationItem key={item.notificationId} notification={item} />
                             ))
                         }
                     </ul>

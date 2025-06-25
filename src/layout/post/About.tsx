@@ -73,6 +73,11 @@ function About() {
                     const likePost = JSON.parse(message.body);
                     updateTotalLikes(likePost.postId, likePost.totalLikes);
                 });
+                stompClient.subscribe('/topic/likeComment', (message) => {
+                    const likeComment = JSON.parse(message.body);
+                    console.log(likeComment);
+                    updateLikeCount(likeComment.postId,likeComment.commentId, likeComment.totalLikes);
+                });
                 stompClient.subscribe('/topic/notification', (message) => {
                     const notification = JSON.parse(message.body);
                     if (notification.toAccountId === getUserToken().accountId) {
@@ -119,6 +124,26 @@ function About() {
                 setNotifications(data);
             }).catch(error => console.log(error));
     }, []);
+
+    const updateLikeCount = (postId: number, commentId: number, totalLikeComments: number) => {
+        setPosts(prevPosts => {
+            const updatedPosts = prevPosts.map(post =>
+                post.postId === postId
+                    ? {
+                        ...post,
+                        comments: Array.isArray(post.comments) ? post.comments.map(comment =>
+                            comment.commentId === commentId
+                                ? { ...comment, totalLikeComments } // Cập nhật số lượng thích
+                                : comment
+                        ) : [] // Nếu không phải là mảng, trả về mảng rỗng
+                    }
+                    : post
+            );
+            console.log(updatedPosts); // Kiểm tra kết quả
+            return updatedPosts;
+        });
+    };
+
     const handleShowModalCreatePost = (e: any) => {
         e.preventDefault();
         setShowModalCreatePost(true);
@@ -170,12 +195,15 @@ function About() {
         setPosts(prevPosts =>
             prevPosts.map(post =>
                 post.postId === newComment.postId
-                    // @ts-ignore
-                    ? { ...post, comments: [newComment, ...post.comments] } // Thêm bình luận mới vào đầu mảng comments
+                    ? {
+                        ...post,
+                        comments: Array.isArray(post.comments) ? [newComment, ...post.comments] : [newComment]
+                    }
                     : post
             )
         );
     };
+
     const handleNavigationHome = () => {
         navigate(`/home`); // Điều hướng đến trang người dùng
     };
@@ -404,18 +432,18 @@ function About() {
 
                                         <div className="like-comment-post-area-left-comment" style={{display : 'flex', alignItems : 'center', justifyContent : 'center'}}>
                                             <svg  xmlns="http://www.w3.org/2000/svg" height="24px"
-                                                  viewBox="0 -960 960 960" width="24px" fill={post.comments && post.comments.length === 0 ? '#7a809b' : 'blue'}>
+                                                  viewBox="0 -960 960 960" width="24px" fill={!post.comments || post.comments.length === 0 ? '#7a809b' : 'blue'}>
                                                 <path
                                                     d="M80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/>
                                             </svg>
-                                            <div onClick={() => post?.postId !== undefined && showCommentForm(post.postId)} style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Bình Luận ({post.comments?.length})
+                                            <div onClick={() => post?.postId !== undefined && showCommentForm(post.postId)} style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Bình Luận ({post.comments ? post.comments?.length : 0})
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div hidden={post.postId !== undefined && !visibleComments.includes(post.postId)}>
                                     {/*// @ts-ignore*/}
-                                    <CommentProps comments={post.comments} avatar={post.avatar} fullName={post.fullName} accountId={post.accountId} postId={post.postId} client={client}/>
+                                    <CommentProps key={post.postId} comments={post.comments} avatar={post.avatar} fullName={post.fullName} accountId={post.accountId} postId={post.postId} client={client} postAccountId={post.accountId} />
                                 </div>
                             </div>
 

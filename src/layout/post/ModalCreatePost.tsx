@@ -60,7 +60,7 @@ function ModalCreatePost(props: any) {
     }
 
     const handleChangeContent = (e: ChangeEvent<HTMLTextAreaElement>) => {
-        setContentText(e.target.value.trim());
+        setContentText(e.target.value);
 
     }
 
@@ -277,8 +277,8 @@ function ModalCreatePost(props: any) {
                                         borderRadius: '20px',
                                         fontSize: '15px'
                                     }}
+                                    value={contentText}
                                 >
-                                {contentText}
                             </textarea>
                             </div>
                             <div hidden={!isShowImageForm || imageListData.length > 0}
