@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 import Image from "../../model/Image";
+import CommentPost from "../../model/CommentPost";
 import Notification from "../../model/Notification";
 import ModalCreatePost from "./ModalCreatePost";
 import Account from "../../model/Account";
@@ -16,6 +17,8 @@ import CalculateTime from "./CalculateTime";
 import {getAllPostOfOtherUser} from "../../api/post-api";
 import ShowImageModal from "./ShowImageModal";
 import {getAllNotificationUnreadOfUser} from "../../api/Notification-api";
+import CommentProps from "./CommentProps";
+import {getAllCommentOfPost} from "../../api/comment-api";
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -66,6 +69,10 @@ function Home() {
                     const likePost = JSON.parse(message.body);
                     updateTotalLikes(likePost.postId, likePost.totalLikes);
                 });
+                stompClient.subscribe('/topic/comment', (message) => {
+                    const comment = JSON.parse(message.body);
+                    updateComment(comment);
+                });
                 stompClient.subscribe('/topic/notification', (message) => {
                     const notification = JSON.parse(message.body);
                     if (notification.toAccountId === getUserToken().accountId) {
@@ -110,7 +117,26 @@ function Home() {
             data => {
                 setNotifications(data);
             }).catch(error => console.log(error));
+
     }, []);
+
+    const updateLikeCount = (postId: number, commentId: number, totalLikeComments: number) => {
+        setPosts(prevPosts =>
+            prevPosts.map(post =>
+                post.postId === postId
+                    ? {
+                        ...post,
+                        // @ts-ignore
+                        comments: post.comments.map(comment =>
+                            comment.commentId === commentId
+                                ? { ...comment, totalLikeComments: totalLikeComments } // Tăng số lượng thích
+                                : comment
+                        )
+                    }
+                    : post
+            )
+        );
+    };
     const handleShowModalCreatePost = (e: any) => {
         e.preventDefault();
         setShowModalCreatePost(true);
@@ -118,7 +144,7 @@ function Home() {
         setResetProp(false);
     }
 
-    const handleShowModalImagePost = (postId:number) => {
+    const handleShowModalImagePost = (postId: number) => {
         setShowModalImagePost(true);
         setResetPropImage(false);
         setPostId(postId);
@@ -140,15 +166,25 @@ function Home() {
     const updateTotalLikes = (postId: number, newTotalLikes: number) => {
         setPosts((prevPosts) =>
             prevPosts.map((post) =>
-                post.postId === postId ? { ...post, totalLikes: newTotalLikes } : post
+                post.postId === postId ? {...post, totalLikes: newTotalLikes} : post
             )
         );
     };
-    const handleCreateLikePost = (postId : number) => {
+    const updateComment = (newComment: CommentPost) => {
+        setPosts(prevPosts =>
+            prevPosts.map(post =>
+                post.postId === newComment.postId
+                    // @ts-ignore
+                    ? { ...post, comments: [newComment, ...post.comments] } // Thêm bình luận mới vào đầu mảng comments
+                    : post
+            )
+        );
+    };
+    const handleCreateLikePost = (postId: number) => {
         if (client) {
             let messageLikePostSend = JSON.stringify({
-                postId : postId,
-                accountId : getUserToken().accountId,
+                postId: postId,
+                accountId: getUserToken().accountId,
             })
 
             client.publish({
@@ -161,6 +197,15 @@ function Home() {
     const handleNavigationHome = () => {
         navigate(`/home`); // Điều hướng đến trang người dùng
     };
+    const [visibleComments, setVisibleComments] = useState<number[]>([]);
+    const showCommentForm = (postId: number) => {
+        setVisibleComments(prev =>
+            prev.includes(postId)
+                ? prev.filter(id => id !== postId) // Nếu đã có, xóa khỏi mảng
+                : [...prev, postId] // Nếu chưa có, thêm vào mảng
+        );
+    };
+    // @ts-ignore
     return (<div>
         {/*// @ts-ignore*/}
         <Navbar notifications={notifications}/>
@@ -287,10 +332,11 @@ function Home() {
                  style={{width: '50%', marginTop: '90px', marginLeft: '20%', marginRight: '5%'}}>
                 <div className="form-create-post-wrapper" style={{marginBottom: '20px', width: '100%'}}>
                     <div className="create-post-top">
-                        <div className="create-post-input" onClick={handleShowModalCreatePost}><input style={{paddingLeft: '50px', width: '100%'}}
-                                                                  disabled={isDisable}
-                                                                  type="text"
-                                                                  placeholder={user.fullName + ' bạn đang thắc mắc điều gì?'}/>
+                        <div className="create-post-input" onClick={handleShowModalCreatePost}><input
+                            style={{paddingLeft: '50px', width: '100%'}}
+                            disabled={isDisable}
+                            type="text"
+                            placeholder={user.fullName + ' bạn đang thắc mắc điều gì?'}/>
                             <img src={user.avatar} alt="avatar" style={{
                                 width: '30px', height: '30px', borderRadius: '50%',
                                 position: "absolute", top: '10px', left: '10px'
@@ -322,7 +368,7 @@ function Home() {
                                     </button>
 
                                 </div>
-                                <div className="post-detail-acc" style={{display: 'flex', marginBottom : '10px'}}>
+                                <div className="post-detail-acc" style={{display: 'flex', marginBottom: '10px'}}>
                                     <div className="post-detail-acc-left">
                                         <img src={post.avatar} alt="avatar"
                                              style={{
@@ -358,36 +404,58 @@ function Home() {
                                      style={{fontSize: '16px', marginBottom: '10px'}}>
                                     {post.content}
                                 </div>
-                                <div  onClick={() => post?.postId !== undefined && handleShowModalImagePost(post.postId)}
+                                <div onClick={() => post?.postId !== undefined && handleShowModalImagePost(post.postId)}
                                      style={(post.imageList == null || post.imageList.length === 0) ? {display: 'none'} : {display: 'block'}}
                                      className="show-image-post-modal">
                                     Hiển thị ảnh
                                 </div>
-                                <div className="like-comment-post-area" style={{padding : '10px 0', borderTop : '1px solid #7a809b', display : 'flex', justifyContent : 'space-between', alignItems : 'center' }}>
-                                    <div className="like-comment-post-area-left" style={{display : 'flex'}}>
-                                        <div className="like-comment-post-area-left-like" style={{display : 'flex', alignItems : 'center', justifyContent : 'center', marginRight : '20px'}}>
-                                            <svg  xmlns="http://www.w3.org/2000/svg" height="24px"
+                                <div className="like-comment-post-area" style={{
+                                    padding: '10px 0',
+                                    borderTop: '1px solid #7a809b',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div className="like-comment-post-area-left" style={{display: 'flex'}}>
+                                        <div className="like-comment-post-area-left-like" style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            marginRight: '20px'
+                                        }}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px"
                                                  viewBox="0 -960 960 960"
-                                                 width="24px"  fill={post.totalLikes === 0 ? '#7a809b' : 'red'}>
+                                                 width="24px" fill={post.totalLikes === 0 ? '#7a809b' : 'red'}>
                                                 <path
                                                     d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Zm0-108q96-86 158-147.5t98-107q36-45.5 50-81t14-70.5q0-60-40-100t-100-40q-47 0-87 26.5T518-680h-76q-15-41-55-67.5T300-774q-60 0-100 40t-40 100q0 35 14 70.5t50 81q36 45.5 98 107T480-228Zm0-273Z"/>
                                             </svg>
-                                            <div onClick={() => post?.postId !== undefined && handleCreateLikePost(post.postId)}
-                                                style={{marginLeft : '5px', cursor : 'pointer', color : '#7a809b'}}>Yêu Thích ({post.totalLikes})</div>
+                                            <div
+                                                onClick={() => post?.postId !== undefined && handleCreateLikePost(post.postId)}
+                                                style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Yêu Thích
+                                                ({post.totalLikes})
+                                            </div>
                                         </div>
 
-                                        <div className="like-comment-post-area-left-comment" style={{display : 'flex', alignItems : 'center', justifyContent : 'center'}}>
-                                            <svg  xmlns="http://www.w3.org/2000/svg" height="24px"
-                                                 viewBox="0 -960 960 960" width="24px" fill="#7a809b">
+                                        <div className="like-comment-post-area-left-comment"
+                                             style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px"
+                                                 viewBox="0 -960 960 960" width="24px" fill={post.comments && post.comments.length === 0 ? '#7a809b' : 'blue'}>
                                                 <path
                                                     d="M80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/>
                                             </svg>
-                                            <div style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Bình Luận
+                                            <div onClick={() => post?.postId !== undefined && showCommentForm(post.postId)}
+                                                 style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Bình Luận ({post.comments?.length})
                                             </div>
                                         </div>
 
                                     </div>
                                 </div>
+                                {/*// @ts-ignore*/}
+                                <div hidden={!visibleComments.includes(post.postId)}>
+                                    {/*// @ts-ignore*/}
+                                    <CommentProps comments={post.comments} avatar={post.avatar} fullName={post.fullName} accountId={post.accountId} postId={post.postId} client={client}/>
+                                </div>
+
                             </div>
 
                         )
@@ -461,7 +529,6 @@ function Home() {
             postId={postId}
             onHide={handleCloseModalImagePost}
             resetProp={resetPropImage}/>
-
 
 
     </div>)

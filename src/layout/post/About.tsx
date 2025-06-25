@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getUserToken } from "../../api/PublicApi";
 import ShowImageModal from "./ShowImageModal";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getAllTopicProduct } from "../../api/ProductApi";
 import {getAllPostOfUser} from "../../api/post-api";
 import { getAllNotificationUnreadOfUser } from "../../api/Notification-api";
@@ -16,6 +16,8 @@ import ModalCreatePost from "./ModalCreatePost";
 import Navbar from "../navbar/Navbar";
 import CalculateTime from "./CalculateTime";
 import {getAccountByAccountId} from "../../api/AccountApi";
+import CommentProps from "./CommentProps";
+import CommentPost from "../../model/CommentPost";
 
 function About() {
     const [postId, setPostId] = useState(0);
@@ -62,6 +64,10 @@ function About() {
                 stompClient.subscribe('/topic/posts', (message) => {
                     const post = JSON.parse(message.body);
                     setPosts((prev) => [post, ...prev]); // Thêm post vào đầu mảng
+                });
+                stompClient.subscribe('/topic/comment', (message) => {
+                    const comment = JSON.parse(message.body);
+                    updateComment(comment);
                 });
                 stompClient.subscribe('/topic/likePost', (message) => {
                     const likePost = JSON.parse(message.body);
@@ -160,8 +166,26 @@ function About() {
         }
 
     }
+    const updateComment = (newComment: CommentPost) => {
+        setPosts(prevPosts =>
+            prevPosts.map(post =>
+                post.postId === newComment.postId
+                    // @ts-ignore
+                    ? { ...post, comments: [newComment, ...post.comments] } // Thêm bình luận mới vào đầu mảng comments
+                    : post
+            )
+        );
+    };
     const handleNavigationHome = () => {
         navigate(`/home`); // Điều hướng đến trang người dùng
+    };
+    const [visibleComments, setVisibleComments] = useState<number[]>([]);
+    const showCommentForm = (postId: number) => {
+        setVisibleComments(prev =>
+            prev.includes(postId)
+                ? prev.filter(id => id !== postId) // Nếu đã có, xóa khỏi mảng
+                : [...prev, postId] // Nếu chưa có, thêm vào mảng
+        );
     };
     return (<div>
         {/*// @ts-ignore*/}
@@ -338,10 +362,10 @@ function About() {
                                     <div className="post-detail-acc-right">
                                         <p>{post.fullName}</p>
                                         <div style={{display: 'flex', alignItems: 'center', marginTop: '-7%'}}>
-                                            <p style={{
+                                            <div style={{
                                                 color: '#7a809b',
-                                                fontSize: '14px'
-                                            }}>{post.statusPostName + " .  "}</p>
+                                                fontSize: '14px', marginRight : '5px'
+                                            }}>{post.statusPostName + " .  "}</div>
                                             {/*// @ts-ignore*/}
                                             <CalculateTime dateCreated={post.dateCreated}/>
                                         </div>
@@ -380,17 +404,19 @@ function About() {
 
                                         <div className="like-comment-post-area-left-comment" style={{display : 'flex', alignItems : 'center', justifyContent : 'center'}}>
                                             <svg  xmlns="http://www.w3.org/2000/svg" height="24px"
-                                                  viewBox="0 -960 960 960" width="24px" fill="#7a809b">
+                                                  viewBox="0 -960 960 960" width="24px" fill={post.comments && post.comments.length === 0 ? '#7a809b' : 'blue'}>
                                                 <path
                                                     d="M80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/>
                                             </svg>
-                                            <div style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Bình Luận
+                                            <div onClick={() => post?.postId !== undefined && showCommentForm(post.postId)} style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Bình Luận ({post.comments?.length})
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
-
+                                <div hidden={post.postId !== undefined && !visibleComments.includes(post.postId)}>
+                                    {/*// @ts-ignore*/}
+                                    <CommentProps comments={post.comments} avatar={post.avatar} fullName={post.fullName} accountId={post.accountId} postId={post.postId} client={client}/>
+                                </div>
                             </div>
 
                         )

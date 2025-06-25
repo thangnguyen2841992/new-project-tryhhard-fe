@@ -28,7 +28,7 @@ const NotificationItem: React.FC<NotificationItem> = ({ notification }) => {
                 <div className="notification-item-notification"
                      style={{display: 'flex', alignItems: 'center'}}>
                     <div style={{fontWeight: 'bold', fontSize: '17px', cursor: 'pointer'}}>{formUser.fullName}</div>
-                    <div style={{marginLeft: '8px'}}>{notification.content}</div>
+                    <div style={{marginLeft: '8px', fontSize: '14px'}}>{notification.content}</div>
                 </div>
                 <div>
                     {/*@ts-ignore*/}
