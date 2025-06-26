@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
-import Image from "../../model/Image";
 import CommentPost from "../../model/CommentPost";
 import Notification from "../../model/Notification";
 import ModalCreatePost from "./ModalCreatePost";
@@ -18,14 +17,11 @@ import {getAllPostOfOtherUser} from "../../api/post-api";
 import ShowImageModal from "./ShowImageModal";
 import {getAllNotificationUnreadOfUser} from "../../api/Notification-api";
 import CommentProps from "./CommentProps";
-import {getAllCommentOfPost} from "../../api/comment-api";
-import ReplyProps from "./ReplyProps";
 import ReplyComment from "../../model/ReplyComment";
+import ChatProps from "./ChatProps";
 
 function Home() {
     const [postId, setPostId] = useState(0);
-    const [isShowImages, setIsShowImages] = useState(false);
-    const [isReloadImgs, setIsReloadImgs] = useState<number>(0);
     const [user, setUser] = useState<Account>({});
     const [isDisable, setIsDisable] = useState(false);
     const [showModalCreatePost, setShowModalCreatePost] = useState<boolean>(false);
@@ -34,23 +30,14 @@ function Home() {
     const [resetPropImage, setResetPropImage] = useState(false);
     const [actionCount, setActionCount] = useState(0);
     const navigate = useNavigate();
-    // const [friends, setFriends] = useState<User[]>([]);
-    const [resetTotalLike, setResetTotalLike] = useState(0);
-    const [avatar, setAvatar] = useState<Image>({});
-    const [showComments, setShowComments] = useState<boolean>(false);
-    const [resetComment, setResetComment] = useState<number>(0);
-
-    const [commentForms, setCommentForms] = useState<{
-        [key: number]: boolean
-    }>({});
-    const [topics, setTopics] = useState<TopicProduct[]>([]);
-
+    const [topics, setTopics] = useState<TopicProduct[]>([])
     const [selectedTopicValue, setSelectedTopicValue] = useState<string>(topics[0]?.topicName || '');
-
-    const [messages, setMessages] = useState<string[]>([]);
     const [client, setClient] = useState<Client | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [toUserId, setToUserId] = useState<number>(0);
+    const [toUserFullname, setToUserFullname] = useState<string>('');
+    const [toUserAvatar, setToUserAvatar] = useState<string>('');
 
     useEffect(() => {
         const stompClient = new Client({
@@ -132,6 +119,7 @@ function Home() {
             }).catch(error => console.log(error));
 
     }, []);
+
 
     const updateLikeCount = (postId: number, commentId: number, totalLikeComments: number) => {
         setPosts(prevPosts => {
@@ -245,6 +233,12 @@ function Home() {
                 : [...prev, postId] // Nếu chưa có, thêm vào mảng
         );
     };
+
+    const onChat = (toAccountId : number, toAccountFullname : string, toAccountAvatar : string) => {
+        setToUserId(toAccountId);
+        setToUserFullname(toAccountFullname);
+        setToUserAvatar(toAccountAvatar);
+    }
     // @ts-ignore
     return (<div>
         {/*// @ts-ignore*/}
@@ -420,7 +414,7 @@ function Home() {
                                              }}/>
                                     </div>
                                     <div className="post-detail-acc-right">
-                                        <p>{post.fullName}</p>
+                                        <p style={{cursor : 'pointer'}} className={'post-detail-acc-right-name'} onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onChat(post.accountId, post.fullName, post.avatar)}>{post.fullName}</p>
                                         <div style={{display: 'flex', alignItems: 'center', marginTop: '-7%'}}>
                                             <div style={{
                                                 color: '#7a809b',
@@ -569,7 +563,8 @@ function Home() {
             onHide={handleCloseModalImagePost}
             resetProp={resetPropImage}/>
 
-
+        {/*@ts-ignore*/}
+        <ChatProps toAccountId={toUserId} toAccountFullName={toUserFullname} toAccountAvatar={toUserAvatar} client={client}/>
     </div>)
 }
 
