@@ -773,4 +773,33 @@ input[type="text"]:focus {
   text-decoration: underline;
 }
 
+.list-chat-box-item {
+  display: flex;
+  justify-content: space-between; /* Căn chỉnh hai phần tử hai bên */
+  margin: 10px 0; /* Khoảng cách giữa các tin nhắn */
+}
+
+.list-chat-box-item-formUser
+{
+  width: 60%; /* Đặt chiều rộng cho cả hai phần tử */
+}
+.list-chat-box-item-toUser {
+  width: 70%;
+}
+
+.list-chat-box-item-formUser {
+  margin-left: auto; /* Đẩy phần tử này sang bên phải */
+}
+
+.list-chat-box-item-toUser {
+  margin-right: auto; /* Đẩy phần tử này sang bên trái */
+}
+.close-chat-box button{
+  transition: 0.5s;
+}
+.close-chat-box button:hover {
+  background-color: #e5e5e5;
+}
+
+
 

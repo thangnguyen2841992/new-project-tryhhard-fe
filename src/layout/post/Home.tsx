@@ -19,6 +19,8 @@ import {getAllNotificationUnreadOfUser} from "../../api/Notification-api";
 import CommentProps from "./CommentProps";
 import ReplyComment from "../../model/ReplyComment";
 import ChatProps from "./ChatProps";
+import ChatRequest from "../../model/ChatRequest";
+import { getAllChatOfUser } from "../../api/chat-api";
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -38,6 +40,8 @@ function Home() {
     const [toUserId, setToUserId] = useState<number>(0);
     const [toUserFullname, setToUserFullname] = useState<string>('');
     const [toUserAvatar, setToUserAvatar] = useState<string>('');
+    const [chats, setChats] = useState<ChatRequest[]>([]);
+    const [showChat, setShowChat] = useState<boolean>(false);
 
     useEffect(() => {
         const stompClient = new Client({
@@ -72,6 +76,11 @@ function Home() {
                     const reply = JSON.parse(message.body);
                     updateReplyForComment(reply)
                     console.log(reply);
+                });
+                stompClient.subscribe('/topic/chat', (message) => {
+                    const chat = JSON.parse(message.body);
+                    setChats((prev) => [chat, ...prev]); // Thêm post vào đầu mảng
+                    console.log(chat);
                 });
                 stompClient.subscribe('/topic/notification', (message) => {
                     const notification = JSON.parse(message.body);
@@ -235,9 +244,17 @@ function Home() {
     };
 
     const onChat = (toAccountId : number, toAccountFullname : string, toAccountAvatar : string) => {
+        if (toAccountId === getUserToken().accountId) {
+            return;
+        }
+
         setToUserId(toAccountId);
         setToUserFullname(toAccountFullname);
         setToUserAvatar(toAccountAvatar);
+        getAllChatOfUser(toAccountId).then((data) => {
+            setChats(data);
+        } )
+        setShowChat(true);
     }
     // @ts-ignore
     return (<div>
@@ -564,7 +581,7 @@ function Home() {
             resetProp={resetPropImage}/>
 
         {/*@ts-ignore*/}
-        <ChatProps toAccountId={toUserId} toAccountFullName={toUserFullname} toAccountAvatar={toUserAvatar} client={client}/>
+        <ChatProps  toAccountId={toUserId} toAccountFullName={toUserFullname} toAccountAvatar={toUserAvatar} client={client} chats={chats} showChat={showChat} setShowChat={setShowChat} />
     </div>)
 }
 
