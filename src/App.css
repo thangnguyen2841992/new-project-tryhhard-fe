@@ -757,4 +757,20 @@ input[type="text"]:focus {
   background-color: #888888;
 }
 
+.chat-box {
+  position: fixed; /* Định vị thẻ cố định */
+  bottom: 20px; /* Cách đáy màn hình 20px */
+  right: 20px; /* Cách bên phải màn hình 20px */
+  width: 300px; /* Đặt chiều rộng của hộp chat */
+  padding: 10px; /* Khoảng cách bên trong */
+  background-color: white; /* Màu nền */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Đổ bóng */
+  border-radius: 5px; /* Bo góc */
+  z-index: 1000; /* Đảm bảo hộp chat nằm trên các phần tử khác */
+}
+.post-detail-acc-right-name:hover{
+  color : deepskyblue;
+  text-decoration: underline;
+}
+
 
