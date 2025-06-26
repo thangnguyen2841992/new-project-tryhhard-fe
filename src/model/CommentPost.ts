@@ -1,3 +1,5 @@
+import ReplyComment from "./ReplyComment";
+
 class CommentPost {
     commentId ?: number;
 
@@ -15,8 +17,10 @@ class CommentPost {
 
     totalLikeComments ?: number;
 
+    listReplyComments ?: ReplyComment[];
 
-    constructor(commentId: number, postId: number, accountId: number, content: string, dateCreated: Date, fullName: string, avatar: string, totalLikeComments: number) {
+
+    constructor(commentId: number, postId: number, accountId: number, content: string, dateCreated: Date, fullName: string, avatar: string, totalLikeComments: number, listReplyComments: ReplyComment[]) {
         this.commentId = commentId;
         this.postId = postId;
         this.accountId = accountId;
@@ -25,6 +29,7 @@ class CommentPost {
         this.fullName = fullName;
         this.avatar = avatar;
         this.totalLikeComments = totalLikeComments;
+        this.listReplyComments = listReplyComments;
     }
 }
 export default CommentPost

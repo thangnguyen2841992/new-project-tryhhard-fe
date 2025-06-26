@@ -18,6 +18,7 @@ import CalculateTime from "./CalculateTime";
 import {getAccountByAccountId} from "../../api/AccountApi";
 import CommentProps from "./CommentProps";
 import CommentPost from "../../model/CommentPost";
+import ReplyComment from "../../model/ReplyComment";
 
 function About() {
     const [postId, setPostId] = useState(0);
@@ -77,6 +78,11 @@ function About() {
                     const likeComment = JSON.parse(message.body);
                     console.log(likeComment);
                     updateLikeCount(likeComment.postId,likeComment.commentId, likeComment.totalLikes);
+                });
+                stompClient.subscribe('/topic/replyComment', (message) => {
+                    const reply = JSON.parse(message.body);
+                    updateReplyForComment(reply)
+                    console.log(reply);
                 });
                 stompClient.subscribe('/topic/notification', (message) => {
                     const notification = JSON.parse(message.body);
@@ -213,6 +219,39 @@ function About() {
             prev.includes(postId)
                 ? prev.filter(id => id !== postId) // Nếu đã có, xóa khỏi mảng
                 : [...prev, postId] // Nếu chưa có, thêm vào mảng
+        );
+    };
+
+    const updateReplyForComment = (newReply: ReplyComment) => {
+        setPosts(prevPosts =>
+            prevPosts.map(post => {
+                if (post.postId === newReply.postId) {
+                    const updatedComments = Array.isArray(post.comments)
+                        ? post.comments.map(comment => {
+                            if (comment.commentId === newReply.commentId) {
+                                const updatedReplies = Array.isArray(comment.listReplyComments)
+                                    ? [newReply].concat(comment.listReplyComments) // Thêm newReply vào đầu danh sách replies
+                                    : [newReply]; // Nếu không có replies, khởi tạo với newReply
+                                return {
+                                    // Trả về bình luận đã cập nhật
+                                    commentId: comment.commentId,
+                                    listReplyComments: updatedReplies,
+                                    // Cập nhật các thuộc tính khác nếu cần
+                                };
+                            }
+                            return comment; // Trả về bình luận gốc nếu không thay đổi
+                        })
+                        : []; // Nếu comments không phải là mảng, trả về mảng rỗng
+
+                    return {
+                        // Trả về bài viết đã cập nhật
+                        postId: post.postId,
+                        comments: updatedComments,
+                        // Cập nhật các thuộc tính khác của bài viết nếu cần
+                    };
+                }
+                return post; // Trả về bài viết gốc nếu không thay đổi
+            })
         );
     };
     return (<div>

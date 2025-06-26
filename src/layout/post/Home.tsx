@@ -19,6 +19,8 @@ import ShowImageModal from "./ShowImageModal";
 import {getAllNotificationUnreadOfUser} from "../../api/Notification-api";
 import CommentProps from "./CommentProps";
 import {getAllCommentOfPost} from "../../api/comment-api";
+import ReplyProps from "./ReplyProps";
+import ReplyComment from "../../model/ReplyComment";
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -77,7 +79,12 @@ function Home() {
                 stompClient.subscribe('/topic/likeComment', (message) => {
                     const likeComment = JSON.parse(message.body);
                     console.log(likeComment);
-                    updateLikeCount(likeComment.postId,likeComment.commentId, likeComment.totalLikes);
+                    updateLikeCount(likeComment.postId, likeComment.commentId, likeComment.totalLikes);
+                });
+                stompClient.subscribe('/topic/replyComment', (message) => {
+                    const reply = JSON.parse(message.body);
+                    updateReplyForComment(reply)
+                    console.log(reply);
                 });
                 stompClient.subscribe('/topic/notification', (message) => {
                     const notification = JSON.parse(message.body);
@@ -134,7 +141,7 @@ function Home() {
                         ...post,
                         comments: Array.isArray(post.comments) ? post.comments.map(comment =>
                             comment.commentId === commentId
-                                ? { ...comment, totalLikeComments } // Cập nhật số lượng thích
+                                ? {...comment, totalLikeComments} // Cập nhật số lượng thích
                                 : comment
                         ) : [] // Nếu không phải là mảng, trả về mảng rỗng
                     }
@@ -185,6 +192,29 @@ function Home() {
                     ? {
                         ...post,
                         comments: Array.isArray(post.comments) ? [newComment, ...post.comments] : [newComment]
+                    }
+                    : post
+            )
+        );
+    };
+    const updateReplyForComment = (newReply: ReplyComment) => {
+        setPosts(prevPosts =>
+            prevPosts.map(post =>
+                post.postId === newReply.postId
+                    ? {
+                        ...post,
+                        comments: Array.isArray(post.comments)
+                            ? post.comments.map(comment =>
+                                comment.commentId === newReply.commentId
+                                    ? {
+                                        ...comment,
+                                        listReplyComments: Array.isArray(comment.listReplyComments)
+                                            ? [newReply, ...comment.listReplyComments] // Thêm newReply vào đầu danh sách replies
+                                            : [newReply] // Nếu không có replies, khởi tạo với newReply
+                                    }
+                                    : comment
+                            )
+                            : post.comments // Nếu comments không phải là mảng, giữ nguyên
                     }
                     : post
             )
@@ -449,12 +479,14 @@ function Home() {
                                         <div className="like-comment-post-area-left-comment"
                                              style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                                             <svg xmlns="http://www.w3.org/2000/svg" height="24px"
-                                                 viewBox="0 -960 960 960" width="24px" fill={!post.comments || post.comments.length === 0 ? '#7a809b' : 'blue'}>
+                                                 viewBox="0 -960 960 960" width="24px"
+                                                 fill={!post.comments || post.comments.length === 0 ? '#7a809b' : 'blue'}>
                                                 <path
                                                     d="M80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"/>
                                             </svg>
                                             <div onClick={() => post?.postId !== undefined && showCommentForm(post.postId)}
-                                                 style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Bình Luận ({post.comments ? post.comments?.length : 0})
+                                                 style={{marginLeft: '5px', cursor: 'pointer', color: '#7a809b'}}>Bình Luận
+                                                ({post.comments ? post.comments?.length : 0})
                                             </div>
                                         </div>
 
@@ -465,12 +497,9 @@ function Home() {
                                     {/*// @ts-ignore*/}
                                     <CommentProps key={post.postId} comments={post.comments} avatar={post.avatar} fullName={post.fullName} accountId={post.accountId} postId={post.postId} client={client} postAccountId={post.accountId}/>
                                 </div>
-
                             </div>
-
                         )
                     )
-
                 }
 
 
