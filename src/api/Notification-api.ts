@@ -17,6 +17,7 @@ export async function getAllNotificationUnreadOfUser(): Promise<Notification[]> 
                 isRead: responseData[key].isRead,
                 dateCreated: responseData[key].dateCreated,
                 content: responseData[key].content,
+                type : responseData[key].type
             }
         )
     }

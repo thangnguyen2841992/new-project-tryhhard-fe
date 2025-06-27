@@ -21,6 +21,7 @@ import ReplyComment from "../../model/ReplyComment";
 import ChatProps from "./ChatProps";
 import ChatRequest from "../../model/ChatRequest";
 import { getAllChatOfUser } from "../../api/chat-api";
+import ActionUser from "./ActionUser";
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -42,6 +43,7 @@ function Home() {
     const [toUserAvatar, setToUserAvatar] = useState<string>('');
     const [chats, setChats] = useState<ChatRequest[]>([]);
     const [showChat, setShowChat] = useState<boolean>(false);
+    const [hoveredUserId, setHoveredUserId] = useState<number>(0);
 
     useEffect(() => {
         const stompClient = new Client({
@@ -79,7 +81,7 @@ function Home() {
                 });
                 stompClient.subscribe('/topic/chat', (message) => {
                     const chat = JSON.parse(message.body);
-                    setChats((prev) => [chat, ...prev]); // Thêm post vào đầu mảng
+                    setChats((prev) => [chat, ...prev]);// Thêm post vào đầu mảng
                     console.log(chat);
                 });
                 stompClient.subscribe('/topic/notification', (message) => {
@@ -256,10 +258,31 @@ function Home() {
         } )
         setShowChat(true);
     }
+
+    const onAddFriend = (toAccountId : number, toAccountFullname : string, toAccountAvatar : string) => {
+        if (toAccountId === getUserToken().accountId) {
+            return;
+        }
+        if (client) {
+            let messageSend = JSON.stringify({
+                formUserId: getUserToken().accountId,
+                formFullname: getUserToken().fullName,
+                formAvatar: getUserToken().avatar,
+
+                toUserId: toAccountId,
+                toFullname: toAccountFullname,
+                toAvatar: toAccountAvatar
+            })
+            client.publish({
+                destination: '/app/friend',
+                body: messageSend
+            });
+        }
+    }
     // @ts-ignore
     return (<div>
         {/*// @ts-ignore*/}
-        <Navbar notifications={notifications}/>
+        <Navbar notifications={notifications} client={client} setNotifications={setNotifications}/>
         <div className="home-content" style={{width: '99vw', height: '100vh', display: 'flex', padding: '15px 5px'}}>
             <div className="home-content-left" style={{
                 width: '15%',
@@ -419,7 +442,8 @@ function Home() {
                                     </button>
 
                                 </div>
-                                <div className="post-detail-acc" style={{display: 'flex', marginBottom: '10px'}}>
+                                <div className="post-detail-acc"
+                                     style={{display: 'flex', marginBottom: '10px', position: 'relative'}}>
                                     <div className="post-detail-acc-left">
                                         <img src={post.avatar} alt="avatar"
                                              style={{
@@ -431,7 +455,9 @@ function Home() {
                                              }}/>
                                     </div>
                                     <div className="post-detail-acc-right">
-                                        <p style={{cursor : 'pointer'}} className={'post-detail-acc-right-name'} onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onChat(post.accountId, post.fullName, post.avatar)}>{post.fullName}</p>
+                                        <p style={{cursor: 'pointer'}} className={'post-detail-acc-right-name'}
+                                           onMouseEnter={() => post?.accountId !== undefined && post?.postId !== undefined  && setHoveredUserId(post.postId)} >{post.fullName}</p>
+                                           {/*onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onChat(post.accountId, post.fullName, post.avatar)}>{post.fullName}</p>*/}
                                         <div style={{display: 'flex', alignItems: 'center', marginTop: '-7%'}}>
                                             <div style={{
                                                 color: '#7a809b',
@@ -442,6 +468,25 @@ function Home() {
                                         </div>
 
                                     </div>
+
+                                    {hoveredUserId === post.postId  && (
+                                        <div className={'action-user'} onMouseLeave={() => setHoveredUserId(0)}>
+                                            <div className="action-user-top">
+                                                <img src={post.avatar} alt="avatar" style={{width : '100px', height : '100px', borderRadius : '50%', objectFit : 'cover'}}/>
+                                                <div style={{fontSize:'20px', fontWeight:'bold', marginLeft : '10px'}}>{post.fullName}</div>
+
+                                            </div>
+                                            <div className="action-user-bottom">
+                                                 <button onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onChat(post.accountId, post.fullName, post.avatar)} className={'send-message-btn'}>Nhắn tin</button>
+                                                   <button  onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onAddFriend(post.accountId, post.fullName, post.avatar)}
+                                                       className={'send-friend-btn'}>Kết Bạn</button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {/*// <div hidden={!showUserAction} className={'action-user'}>*/}
+                                    {/*//     <button className={'send-message-btn'}>Nhắn tin</button>*/}
+                                    {/*//     <button className={'send-friend-btn'}>Kết Bạn</button>*/}
+                                    {/*// </div>*/}
                                 </div>
                                 <div style={{
                                     borderLeft: '2px solid #b1b6c9',
@@ -506,7 +551,7 @@ function Home() {
                                 {/*// @ts-ignore*/}
                                 <div hidden={!visibleComments.includes(post.postId)}>
                                     {/*// @ts-ignore*/}
-                                    <CommentProps key={post.postId} comments={post.comments} avatar={post.avatar} fullName={post.fullName} accountId={post.accountId} postId={post.postId} client={client} postAccountId={post.accountId}/>
+                                    <CommentProps key={post.postId} comments={post.comments} avatar={post.avatar} fullName={post.fullName} accountId={post.accountId} postId={post.postId} client={client} postAccountId={post.accountId} onChat={onChat}/>
                                 </div>
                             </div>
                         )

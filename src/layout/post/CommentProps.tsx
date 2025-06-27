@@ -13,9 +13,10 @@ interface CommentInterface {
     client:Client;
     postId: number;
     postAccountId: number;
+    onChat: (toAccountId : number, toAccountFullname : string, toAccountAvatar : string) => void;
 }
 
-const CommentProps: React.FC<CommentInterface> = ({comments, fullName, avatar, accountId, client, postId,postAccountId}) => {
+const CommentProps: React.FC<CommentInterface> = ({comments, fullName, avatar, accountId, client, postId,postAccountId, onChat}) => {
 
     const [content, setContent] = useState<string>('');
     const handleChangeContent = (e: ChangeEvent<HTMLInputElement>) => {
@@ -123,7 +124,6 @@ const CommentProps: React.FC<CommentInterface> = ({comments, fullName, avatar, a
                                 </svg>
                             </button>
 
-
                             <button onClick={handleCreateComment} title={'Gửi'} className={'comment-form-right-bot-btn'}
                                     style={{
                                         outline: 'none',
@@ -216,7 +216,9 @@ const CommentProps: React.FC<CommentInterface> = ({comments, fullName, avatar, a
                     {
                         comments.map((comment) => (
                             <div key={comment.commentId} className={'comment-list-area'} style={{marginBottom: '10px'}}>
-                                <div className="comment-list-area-top">
+                                {/*@ts-ignore*/}
+                                <div style={{cursor : 'pointer'}}  onClick={() => onChat(comment.accountId, comment.fullName, comment.avatar)}
+                                    className="comment-list-area-top">
                                     {/*@ts-ignore*/}
                                     <img src={comment.avatar} alt="avatar"
                                          style={{

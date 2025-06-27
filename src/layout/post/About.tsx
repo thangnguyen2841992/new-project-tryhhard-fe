@@ -1,13 +1,12 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { getUserToken } from "../../api/PublicApi";
+import {Link, useNavigate, useParams} from "react-router-dom";
+import {getUserToken} from "../../api/PublicApi";
 import ShowImageModal from "./ShowImageModal";
-import React, { useEffect, useState } from "react";
-import { getAllTopicProduct } from "../../api/ProductApi";
+import React, {useEffect, useState} from "react";
+import {getAllTopicProduct} from "../../api/ProductApi";
 import {getAllPostOfUser} from "../../api/post-api";
-import { getAllNotificationUnreadOfUser } from "../../api/Notification-api";
-import { Client } from "@stomp/stompjs";
+import {getAllNotificationUnreadOfUser} from "../../api/Notification-api";
+import {Client} from "@stomp/stompjs";
 import Account from "../../model/Account";
-import Image from "../../model/Image";
 import Notification from "../../model/Notification";
 import Post from "../../model/Post";
 import TopicProduct from "../../model/TopicProduct";
@@ -19,11 +18,12 @@ import {getAccountByAccountId} from "../../api/AccountApi";
 import CommentProps from "./CommentProps";
 import CommentPost from "../../model/CommentPost";
 import ReplyComment from "../../model/ReplyComment";
+import ChatRequest from "../../model/ChatRequest";
+import {getAllChatOfUser} from "../../api/chat-api";
+import ChatProps from "./ChatProps";
 
 function About() {
     const [postId, setPostId] = useState(0);
-    const [isShowImages, setIsShowImages] = useState(false);
-    const [isReloadImgs, setIsReloadImgs] = useState<number>(0);
     const [user, setUser] = useState<Account>({});
     const [isDisable, setIsDisable] = useState(false);
     const [showModalCreatePost, setShowModalCreatePost] = useState<boolean>(false);
@@ -32,24 +32,17 @@ function About() {
     const [resetPropImage, setResetPropImage] = useState(false);
     const [actionCount, setActionCount] = useState(0);
     const navigate = useNavigate();
-    // const [friends, setFriends] = useState<User[]>([]);
-    const [resetTotalLike, setResetTotalLike] = useState(0);
-    const [avatar, setAvatar] = useState<Image>({});
-    const [showComments, setShowComments] = useState<boolean>(false);
-    const [resetComment, setResetComment] = useState<number>(0);
-
-    const [commentForms, setCommentForms] = useState<{
-        [key: number]: boolean
-    }>({});
     const [topics, setTopics] = useState<TopicProduct[]>([]);
-
     const [selectedTopicValue, setSelectedTopicValue] = useState<string>(topics[0]?.topicName || '');
-
-    const [messages, setMessages] = useState<string[]>([]);
     const [client, setClient] = useState<Client | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const {accountId} = useParams();
+    const [chats, setChats] = useState<ChatRequest[]>([]);
+    const [showChat, setShowChat] = useState<boolean>(false);
+    const [toUserId, setToUserId] = useState<number>(0);
+    const [toUserFullname, setToUserFullname] = useState<string>('');
+    const [toUserAvatar, setToUserAvatar] = useState<string>('');
 
     useEffect(() => {
         const stompClient = new Client({
@@ -83,6 +76,11 @@ function About() {
                     const reply = JSON.parse(message.body);
                     updateReplyForComment(reply)
                     console.log(reply);
+                });
+                stompClient.subscribe('/topic/chat', (message) => {
+                    const chat = JSON.parse(message.body);
+                    setChats((prev) => [chat, ...prev]); // Thêm post vào đầu mảng
+                    console.log(chat);
                 });
                 stompClient.subscribe('/topic/notification', (message) => {
                     const notification = JSON.parse(message.body);
@@ -254,9 +252,22 @@ function About() {
             })
         );
     };
+
+    const onChat = (toAccountId : number, toAccountFullname : string, toAccountAvatar : string) => {
+        if (toAccountId === getUserToken().accountId) {
+            return;
+        }
+        setToUserId(toAccountId);
+        setToUserFullname(toAccountFullname);
+        setToUserAvatar(toAccountAvatar);
+        getAllChatOfUser(toAccountId).then((data) => {
+            setChats(data);
+        } )
+        setShowChat(true);
+    }
     return (<div>
         {/*// @ts-ignore*/}
-        <Navbar notifications={notifications}/>
+        <Navbar notifications={notifications} client={client}/>
         <div className="home-content" style={{width: '99vw', height: '100vh', display: 'flex', padding: '15px 5px'}}>
             <div className="home-content-left" style={{
                 width: '15%',
@@ -316,7 +327,6 @@ function About() {
                             </svg>
                         </div>
                         <span style={{color: 'white'}}>JLPT</span>
-
                     </div>
                 </Link>
                 <div className="home-content-left-item d-flex align-items-center">
@@ -340,7 +350,6 @@ function About() {
                     </div>
                     <span style={{color: 'white'}}>Từ vựng</span>
                 </div>
-
 
                 <div className="home-content-left-item d-flex align-items-center">
                     <div className={'home-content-left-item-icon'}>
@@ -427,7 +436,7 @@ function About() {
                                              }}/>
                                     </div>
                                     <div className="post-detail-acc-right">
-                                        <p>{post.fullName}</p>
+                                        <p style={{cursor : 'pointer'}} className={'post-detail-acc-right-name'} onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onChat(post.accountId, post.fullName, post.avatar)}>{post.fullName}</p>
                                         <div style={{display: 'flex', alignItems: 'center', marginTop: '-7%'}}>
                                             <div style={{
                                                 color: '#7a809b',
@@ -482,15 +491,12 @@ function About() {
                                 </div>
                                 <div hidden={post.postId !== undefined && !visibleComments.includes(post.postId)}>
                                     {/*// @ts-ignore*/}
-                                    <CommentProps key={post.postId} comments={post.comments} avatar={post.avatar} fullName={post.fullName} accountId={post.accountId} postId={post.postId} client={client} postAccountId={post.accountId} />
+                                    <CommentProps key={post.postId} comments={post.comments} avatar={post.avatar} fullName={post.fullName} accountId={post.accountId} postId={post.postId} client={client} postAccountId={post.accountId} onChat={onChat} />
                                 </div>
                             </div>
-
                         )
                     )
-
                 }
-
 
             </div>
             <div className="home-content-right"
@@ -531,13 +537,6 @@ function About() {
             </div>
         </div>
 
-        {/*<ModalImages*/}
-        {/*    postId={postId}*/}
-        {/*    image={image}*/}
-        {/*    setImage={setImage}*/}
-        {/*    show={isShowImages}*/}
-        {/*    setIsShowImages={setIsShowImages}/>*/}
-
         <ModalCreatePost
             topics={topics}
             selectedTopicValue={selectedTopicValue}
@@ -557,6 +556,9 @@ function About() {
             postId={postId}
             onHide={handleCloseModalImagePost}
             resetProp={resetPropImage}/>
+
+        {/*@ts-ignore*/}
+        <ChatProps  toAccountId={toUserId} toAccountFullName={toUserFullname} toAccountAvatar={toUserAvatar} client={client} chats={chats} showChat={showChat} setShowChat={setShowChat} />
 
     </div>)
 }

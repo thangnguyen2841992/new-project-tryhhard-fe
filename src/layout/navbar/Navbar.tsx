@@ -5,12 +5,15 @@ import Account from "../../model/Account";
 import {getUserToken} from "../../api/PublicApi";
 import Notification from "../../model/Notification";
 import NotificationItem from "./NotificationItem";
+import { Client } from "@stomp/stompjs";
 
 interface NavbarProps {
     notifications: Notification[];
+    client : Client
+    setNotifications : (notifications : Notification[]) =>  void
 }
 
-const Navbar: React.FC<NavbarProps> = ({ notifications }) => {
+const Navbar: React.FC<NavbarProps> = ({ notifications, client, setNotifications }) => {
     const [user, setUser] = useState<Account>({});
     const navigate = useNavigate();
     const [keyword, setKeyword] = useState('');
@@ -85,7 +88,7 @@ const Navbar: React.FC<NavbarProps> = ({ notifications }) => {
                         <strong style={{marginLeft :'10px', marginBottom : '10px'}}>Thông báo({notifications.length})</strong>
                         {
                             notifications.map((item) => (
-                                <NotificationItem key={item.notificationId} notification={item} />
+                                <NotificationItem key={item.notificationId} notification={item} client={client} setNotifications={setNotifications} notifications={notifications} />
                             ))
                         }
                     </ul>

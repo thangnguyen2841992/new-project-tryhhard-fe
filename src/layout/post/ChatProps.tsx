@@ -64,7 +64,7 @@ const ChatProps: React.FC<ChatInterface> = ({
                     <img src={toAccountAvatar} alt="avatar" style={{
                         width: '50px',
                         height: '50px',
-                        borderRadius: '10px',
+                        borderRadius: '50%',
                         objectFit: 'cover',
                         marginRight: '10px'
                     }}/>
@@ -83,13 +83,13 @@ const ChatProps: React.FC<ChatInterface> = ({
                 </div>
 
             </div>
-            <div className="list-chat-box" style={{height: '300px', overflowY: 'scroll', padding: '10px'}}>
+            <div className="list-chat-box" style={{height: '300px', overflowY: 'scroll', padding: '10px', width:'100%'}}>
                 {
                     chats.map((chat) => (
                         <div key={chat.chatId} className={'list-chat-box-item'}>
                             <div hidden={chat.formUserId !== getUserToken().accountId}
                                  className="list-chat-box-item-formUser">
-                                <div style={{backgroundColor: '#0070f6', borderRadius: '20px', padding: '5px 10px'}}
+                                <div style={{backgroundColor: '#0070f6', borderRadius: '20px', padding: '5px 10px', maxWidth:'100%', wordWrap: 'break-word'}}
                                      className={'list-chat-box-item-formUser-right'}>
                                     {chat.message}
                                 </div>
@@ -108,7 +108,9 @@ const ChatProps: React.FC<ChatInterface> = ({
                                     <div style={{
                                         backgroundColor: '#e5e5e5',
                                         borderRadius: '20px',
-                                        padding: '5px 10px'
+                                        padding: '5px 10px',
+                                        maxWidth:'100%',
+                                        wordWrap: 'break-word'
                                     }} className={'list-chat-box-item-toUser-right'}>
                                         {chat.message}
                                     </div>

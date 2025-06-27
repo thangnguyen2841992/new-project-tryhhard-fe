@@ -800,6 +800,44 @@ input[type="text"]:focus {
 .close-chat-box button:hover {
   background-color: #e5e5e5;
 }
+.action-user {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  position: absolute;
+  /*left: 210px;*/
+  /*top: 20px;*/
+  width: 350px;
+  transition:1s;
+}
+.action-user-top, .action-user-bottom {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px ;
+}
+.action-user button {
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  transition: 0.5s;
+  padding: 5px;
+  width: 150px;
+  margin-right: 10px;
+}
+.send-message-btn {
+  background-color: rgb(135, 206, 235);
+}
+.send-message-btn:hover{
+  background-color: #0D6EFD;
+}
+.send-friend-btn {
+  background-color: rgb(144, 238, 144);
+}
+.send-friend-btn:hover {
+  background-color: #42B72A;
+}
 
 
 
