@@ -222,36 +222,28 @@ function About() {
 
     const updateReplyForComment = (newReply: ReplyComment) => {
         setPosts(prevPosts =>
-            prevPosts.map(post => {
-                if (post.postId === newReply.postId) {
-                    const updatedComments = Array.isArray(post.comments)
-                        ? post.comments.map(comment => {
-                            if (comment.commentId === newReply.commentId) {
-                                const updatedReplies = Array.isArray(comment.listReplyComments)
-                                    ? [newReply].concat(comment.listReplyComments) // Thêm newReply vào đầu danh sách replies
-                                    : [newReply]; // Nếu không có replies, khởi tạo với newReply
-                                return {
-                                    // Trả về bình luận đã cập nhật
-                                    commentId: comment.commentId,
-                                    listReplyComments: updatedReplies,
-                                    // Cập nhật các thuộc tính khác nếu cần
-                                };
-                            }
-                            return comment; // Trả về bình luận gốc nếu không thay đổi
-                        })
-                        : []; // Nếu comments không phải là mảng, trả về mảng rỗng
-
-                    return {
-                        // Trả về bài viết đã cập nhật
-                        postId: post.postId,
-                        comments: updatedComments,
-                        // Cập nhật các thuộc tính khác của bài viết nếu cần
-                    };
-                }
-                return post; // Trả về bài viết gốc nếu không thay đổi
-            })
+            prevPosts.map(post =>
+                post.postId === newReply.postId
+                    ? {
+                        ...post,
+                        comments: Array.isArray(post.comments)
+                            ? post.comments.map(comment =>
+                                comment.commentId === newReply.commentId
+                                    ? {
+                                        ...comment,
+                                        listReplyComments: Array.isArray(comment.listReplyComments)
+                                            ? [newReply, ...comment.listReplyComments] // Thêm newReply vào đầu danh sách replies
+                                            : [newReply] // Nếu không có replies, khởi tạo với newReply
+                                    }
+                                    : comment
+                            )
+                            : post.comments // Nếu comments không phải là mảng, giữ nguyên
+                    }
+                    : post
+            )
         );
     };
+
 
     const onChat = (toAccountId : number, toAccountFullname : string, toAccountAvatar : string) => {
         if (toAccountId === getUserToken().accountId) {

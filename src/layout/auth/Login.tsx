@@ -118,7 +118,7 @@ function Login() {
                     setEmail('');
                     setPassword('');
                     // Điều hướng đến trang chính hoặc thực hiện các tác vụ sau đăng nhập thành công
-                    // navigate('/watches/admin')
+                    navigate('/home')
                     // setError('Đăng nhập thành công!');
                 }
             ).catch((error) => {

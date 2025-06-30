@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from "react";
 import {getAccountByAccountId} from "../../api/AccountApi";
-import {Link,useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import Account from "../../model/Account";
 import {getUserToken} from "../../api/PublicApi";
 import Notification from "../../model/Notification";
 import NotificationItem from "./NotificationItem";
-import { Client } from "@stomp/stompjs";
+import {Client} from "@stomp/stompjs";
 
 interface NavbarProps {
     notifications: Notification[];

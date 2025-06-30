@@ -278,7 +278,7 @@ const CommentProps: React.FC<CommentInterface> = ({comments, fullName, avatar, a
                                         </div>
                                     </div>
                                 </div>
-                                <div hidden={!comment.commentId || !visibleReplies.includes(comment.commentId)}>
+                                <div key={comment.commentId} hidden={!comment.commentId || !visibleReplies.includes(comment.commentId)}>
                                     {/*// @ts-ignore*/}
                                     <ReplyProps replies={comment.listReplyComments} fullName={comment.avatar} avatar={comment.fullName} accountId={comment.accountId} client={client} postId={comment.postId} commentId={comment.commentId} commentAccountId={comment.accountId} postAccountId={comment.postId}/>
                                 </div>

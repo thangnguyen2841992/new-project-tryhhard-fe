@@ -831,12 +831,21 @@ input[type="text"]:focus {
 }
 .send-message-btn:hover{
   background-color: #0D6EFD;
+  color: white;
 }
 .send-friend-btn {
   background-color: rgb(144, 238, 144);
 }
 .send-friend-btn:hover {
   background-color: #42B72A;
+  color: white;
+}
+.delete-friend-btn {
+  background-color: #dc3545;
+}
+.delete-friend-btn:hover {
+  background-color: #c82333;
+  color: white;
 }
 
 

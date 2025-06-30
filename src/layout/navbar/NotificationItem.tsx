@@ -1,10 +1,10 @@
-import {useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import Notification from "../../model/Notification";
 import Account from "../../model/Account";
-import { getAccountByAccountId } from "../../api/AccountApi";
+import {getAccountByAccountId} from "../../api/AccountApi";
 import CalculateTime from "../post/CalculateTime";
 import {Client} from "@stomp/stompjs";
-import {getUserToken} from "../../api/PublicApi";
+
 interface NotificationItem {
     notification : Notification
     client : Client

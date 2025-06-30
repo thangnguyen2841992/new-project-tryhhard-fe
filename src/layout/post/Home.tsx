@@ -22,6 +22,7 @@ import ChatProps from "./ChatProps";
 import ChatRequest from "../../model/ChatRequest";
 import { getAllChatOfUser } from "../../api/chat-api";
 import ActionUser from "./ActionUser";
+import { checkStatusFriend } from "../../api/Friend-API";
 
 function Home() {
     const [postId, setPostId] = useState(0);
@@ -44,6 +45,7 @@ function Home() {
     const [chats, setChats] = useState<ChatRequest[]>([]);
     const [showChat, setShowChat] = useState<boolean>(false);
     const [hoveredUserId, setHoveredUserId] = useState<number>(0);
+    const [statusFriend, setStatusFriend] = useState<number>(0);
 
     useEffect(() => {
         const stompClient = new Client({
@@ -279,6 +281,16 @@ function Home() {
             });
         }
     }
+
+    const checkStatusFriend1 = (userId:number, postId: number) => {
+        checkStatusFriend(userId).then(data => {
+            if (data.isApproved === true) {
+                setStatusFriend(1)
+            }
+        })
+        setHoveredUserId(postId)
+    }
+
     // @ts-ignore
     return (<div>
         {/*// @ts-ignore*/}
@@ -456,8 +468,7 @@ function Home() {
                                     </div>
                                     <div className="post-detail-acc-right">
                                         <p style={{cursor: 'pointer'}} className={'post-detail-acc-right-name'}
-                                           onMouseEnter={() => post?.accountId !== undefined && post?.postId !== undefined  && setHoveredUserId(post.postId)} >{post.fullName}</p>
-                                           {/*onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onChat(post.accountId, post.fullName, post.avatar)}>{post.fullName}</p>*/}
+                                           onMouseEnter={() => post?.accountId !== undefined && post?.postId !== undefined   && checkStatusFriend1(post.accountId, post.postId)} >{post.fullName} </p>
                                         <div style={{display: 'flex', alignItems: 'center', marginTop: '-7%'}}>
                                             <div style={{
                                                 color: '#7a809b',
@@ -477,9 +488,13 @@ function Home() {
 
                                             </div>
                                             <div className="action-user-bottom">
+                                                
                                                  <button onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onChat(post.accountId, post.fullName, post.avatar)} className={'send-message-btn'}>Nhắn tin</button>
-                                                   <button  onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onAddFriend(post.accountId, post.fullName, post.avatar)}
+                                                   <button hidden={statusFriend === 1}  onClick={() => post?.accountId !== undefined && post?.fullName !== undefined && post.avatar !== undefined && onAddFriend(post.accountId, post.fullName, post.avatar)}
                                                        className={'send-friend-btn'}>Kết Bạn</button>
+
+                                                <button hidden={statusFriend === 0} 
+                                                       className={'delete-friend-btn'}>Hủy Kết Bạn</button>
                                             </div>
                                         </div>
                                     )}
